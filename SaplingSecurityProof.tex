@@ -1,0 +1,1477 @@
+\def\notes{1}
+\documentclass[11pt]{article}
+%\usepackage[T1]{fontenc}
+%\usepackage[letterpaper]{geometry}
+%\geometry{verbose,tmargin=3cm,bmargin=3cm,lmargin=3cm,rmargin=3cm}
+%\usepackage{verbatim}
+\usepackage{amsfonts,amsmath,amssymb,amsthm}
+%\usepackage{setspace}
+\usepackage{xspace}%,enumitem}
+%\usepackage{times}
+\usepackage{fullpage}
+%\usepackage{hyperref}
+%\doublespacing
+\usepackage{color}
+\usepackage{mathrsfs}
+
+%\usepackage{numdef}
+%\usepackage{enumitem}
+\usepackage{amsopn}
+\usepackage{url,hyperref}
+\providecommand{\sqbinom}{\genfrac{\lbrack}{\rbrack}{0pt}{}}
+\DeclareMathOperator{\spn}{span}
+
+\newif\ifdraft
+%\drafttrue
+\drafttrue
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+\numberwithin{equation}{section} %% Comment out for sequentially-numbered
+\numberwithin{figure}{section} %% Comment out for sequentially-numbered
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{conjecture}[thm]{Conjecture}
+\newtheorem{definition}[thm]{Definition}
+\newtheorem{dfn}[thm]{Definition}
+\newtheorem{lemma}[thm]{Lemma}
+\newtheorem{remark}[thm]{Remark}
+\newtheorem{proposition}[thm]{Proposition}
+\newtheorem{corollary}[thm]{Corollary}
+\newtheorem{claim}[thm]{Claim}
+\newtheorem{fact}[thm]{Fact}
+\newtheorem{openprob}[thm]{Open Problem}
+\newtheorem{remk}[thm]{Remark}
+\newtheorem{example}[thm]{Example}
+\newtheorem{apdxlemma}{Lemma}
+\newcommand{\question}[1]{{\sf [#1]\marginpar{?}} }
+%\usepackage{babel}
+\usepackage{tikz}
+
+\makeatletter
+\newcommand*{\circled}{\@ifstar\circledstar\circlednostar}
+\makeatother
+
+\newcommand*\circledstar[1]{%
+  \tikz[baseline=(C.base)]
+    \node[%
+      fill,
+      circle,
+      minimum size=1.35em,
+      text=white,
+      font=\sffamily,
+      inner sep=0.5pt
+    ](C) {#1};%
+}
+\newcommand*\circlednostar[1]{%
+  \tikz[baseline=(C.base)]
+    \node[%
+      draw,
+      circle,
+      minimum size=1.35em,
+      font=\sffamily,
+      inner sep=0.5pt
+    ](C) {#1};%
+}
+
+\providecommand{\bd}[1]{\circled{#1}}
+
+
+%Eli's macros
+\newcommand{\E}{{\mathbb{E}}}
+%\newcommand{\N}{{\mathbb{N}}}
+\newcommand{\R}{{\mathbb{R}}}
+\newcommand{\calF}{{\cal{F}}}
+\newcommand{\inp}{\ensuremath{\mathsf{inp}}\xspace}
+\newcommand{\inps}{\ensuremath{\overrightarrow{\mathsf{inp}}}\xspace}
+\newcommand{\outs}{\ensuremath{\overrightarrow{\mathsf{out}}}\xspace}
+\newcommand{\out}{\ensuremath{\mathsf{out}}\xspace}
+\newcommand{\disp}[1]{D_{#1}}
+%\newcommand{\spn}[1]{{\rm{span}}\left(#1\right)}
+%\newcommand{\supp}{{\rm{supp}}}
+\newcommand{\agree}{{\sf{agree}}}
+\newcommand{\RS}{{\sf{RS}}}
+\newcommand{\aRS}{{\sf{aRS}}}
+\newcommand{\rrs}{R_{\aRS}}
+\newcommand{\VRS}{V_\RS}
+\newcommand{\set}[1]{\ensuremath{\left\{#1\right\}}\xspace}
+\newcommand{\angles}[1]{\langle{#1}\rangle}
+\newcommand{\condset}[2]{\set{#1 \mid #2 }}
+\newcommand{\zo}{\set{0,1}}
+\newcommand{\zon}{{\zo^n}}
+\newcommand{\zom}{{\zo^m}}
+\newcommand{\zok}{{\zo^}}
+\newcommand{\eps}{\ensuremath{\epsilon}\xspace}
+\newcommand{\e}{\eps}
+%\newcommand{\d}{\delta}
+\newcommand{\poly}{\ensuremath{\mathrm{poly}(\lambda)}\xspace}
+\newcommand{\itone}{{\it{(i)}}\xspace}
+\newcommand{\ittwo}{{\it{(ii)}}\xspace}
+\newcommand{\itthree}{{\it{(iii)}}\xspace}
+\newcommand{\itfour}{{\it{(iv)}}\xspace}
+\newcommand{\cc}{{\rm{CC}}}
+\newcommand{\rnk}{{\rm{rank}}}
+\newcommand{\T}{T}
+\newcommand{\I}{{\mathbb{I}}}
+\ifdraft
+\newcommand{\ariel}[1]{{\color{blue}{\textit{#1 --- ariel gabizon}}}}
+\else
+\newcommand{\ariel}[1]{}
+\fi
+\providecommand{\improvement}[1]{{\color{red} \textbf{#1}}}
+
+\newcommand{\ate}[2]{\ensuremath{\mathsf{Ate_{opt}}(#1,#2)}\xspace}
+\title{%
+Sapling Security Proof}
+\author{Ariel Gabizon \and Daira Hopwood}
+\date{Zcash}
+\begin{document}
+\maketitle
+ \mathchardef\mhyphen="2D
+
+%\num\newcommand{\G1}{\ensuremath{{\mathbb G}_1}\xspace}
+%\num\newcommand{\G2}{\ensuremath{{\mathbb G}_2}\xspace}
+%\num\newcommand{\G11}{\ensuremath{\G1\setminus \set{0} }\xspace}
+%\num\newcommand{\G21}{\ensuremath{\G2\setminus \set{0} }\xspace}
+\newcommand{\grouppair}{\ensuremath{G^*}\xspace}
+
+\newcommand{\Gt}{\ensuremath{{\mathbb G}_t}\xspace}
+\newcommand{\F}{\ensuremath{{\mathbb F}_r}\xspace}
+\newcommand{\help}[1]{$#1$-helper\xspace}
+\newcommand{\randompair}[1]{\ensuremath{\mathsf{randomPair}(#1)}\xspace}
+\newcommand{\pair}[1]{$#1$-pair\xspace}
+\newcommand{\pairs}[1]{$#1$-pairs\xspace}
+\newcommand{\pubvalsOf}[1]{\ensuremath{\mathrm{pub}(#1)}\xspace}
+\newcommand{\pairone}[1]{\G1-$#1$-pair\xspace}
+\newcommand{\pairtwo}[1]{\G2-$#1$-pair\xspace}
+\newcommand{\sameratio}[2]{\ensuremath{\mathsf{SameRatio}(#1,#2)}\xspace}
+\newcommand{\vecc}[2]{\ensuremath{(#1)_{#2}}\xspace}
+\newcommand{\players}{\ensuremath{[n]}\xspace}
+\newcommand{\ci}{\ensuremath{\mathrm{CI}}\xspace}
+\newcommand{\pairvec}[1]{$#1$-vector\xspace}
+\newcommand{\Fq}{\ensuremath{\mathbb{F}_q}\xspace}
+\newcommand{\sigscheme}{\ensuremath{\mathscr S}\xspace}
+
+\newcommand{\randpair}[1]{\ensuremath{\mathsf{rp}_{#1}}\xspace}
+\newcommand{\randpairone}[1]{\ensuremath{\mathsf{rp}_{#1}^{1}}\xspace}
+
+\newcommand{\randpairtwo}[1]{\ensuremath{\mathsf{rp_{#1}^2}}\xspace}%the randpair in G2
+
+\newcommand{\pos}{\ensuremath{\mathsf{pos}}\xspace}
+\newcommand{\rej}{\ensuremath{\mathsf{rej}}\xspace}
+\newcommand{\acc}{\ensuremath{\mathsf{acc}}\xspace}
+\newcommand{\sha}[1]{\ensuremath{\mathsf{COMMIT}(#1)}\xspace}
+ \newcommand{\shaa}{\ensuremath{\mathsf{COMMIT}}\xspace}
+ \newcommand{\comm}[1]{\ensuremath{\mathsf{comm}_{#1}}\xspace}
+ \newcommand{\defeq}{:=}
+
+\newcommand{\A}{\ensuremath{\vec{A}}\xspace}
+\newcommand{\B}{\ensuremath{\vec{B}}\xspace}
+\newcommand{\C}{\ensuremath{\vec{C}}\xspace}
+\newcommand{\Btwo}{\ensuremath{\vec{B_2}}\xspace}
+\newcommand{\treevecsimp}{\ensuremath{(\tau,\rho_A,\rho_A \rho_B,\rho_A\alpha_A,\rho_A\rho_B\alpha_B, \rho_A\rho_B\alpha_C,\beta,\beta\gamma)}\xspace}% The sets of elements used in simplifed relation tree in main text body
+\newcommand{\rcptc}{random-coefficient subprotocol\xspace}
+\newcommand{\rcptcparams}[2]{\ensuremath{\mathrm{RCPC}(#1,#2)}\xspace}
+\newcommand{\verifyrcptcparams}[2]{\ensuremath{\mathrm{\mathsf{verify}RCPC}(#1,#2)}\xspace}
+
+% \num\newcommand{\ex1}[1]{\ensuremath{ #1\cdot g_1}\xspace}
+% \num\newcommand{\ex2}[1]{\ensuremath{#1\cdot g_2}\xspace}
+ \newcommand{\pr}{\mathrm{Pr}}
+ \newcommand{\powervec}[2]{\ensuremath{(1,#1,#1^{2},\ldots,#1^{#2})}\xspace}
+%\num\newcommand{\out1}[1]{\ensuremath{\ex1{\powervec{#1}{d}}}\xspace}
+%\num\newcommand{\out2}[1]{\ensuremath{\ex2{\powervec{#1}{d}}}\xspace}
+ \newcommand{\nizk}[2]{\ensuremath{\mathrm{NIZK}(#1,#2)}\xspace}% #2 is the hash concatenation input
+ \newcommand{\verifynizk}[3]{\ensuremath{\mathrm{VERIFY\mhyphen NIZK}(#1,#2,#3)}\xspace}
+\newcommand{\protver}{protocol verifier\xspace} 
+\newcommand{\mulgroup}{\ensuremath{\F^*}\xspace}
+\newcommand{\lag}[1]{\ensuremath{L_{#1}}\xspace} 
+\newcommand{\sett}[2]{\ensuremath{\set{#1}_{#2}}\xspace}
+\newcommand{\omegaprod}{\ensuremath{\alpha_{\omega}}\xspace}
+\newcommand{\lagvec}[1]{\ensuremath{\mathrm{LAG}_{#1}}\xspace}
+\newcommand{\Z}{\ensuremath{\mathbb{Z}}\xspace}
+\newcommand{\Ftwo}{\ensuremath{\mathbb{F}_{p^2}}\xspace}
+\newcommand{\Ftwlth}{\ensuremath{\mathbb{F}_{p^{12}}}\xspace}
+\newcommand{\Ffour}{\ensuremath{\mathbb{F}_{p^4}}\xspace}
+\newcommand{\Fsix}{\ensuremath{\mathbb{F}_{p^{6}}}\xspace}
+
+\newcommand{\coinset}{\ensuremath{{\cal C}}\xspace}
+\newcommand{\serialnumset}{\ensuremath{\mathrm{SN}}\xspace}
+\newcommand{\addrset}{\ensuremath{{\cal A}}\xspace}
+\newcommand{\txset}{\ensuremath{{\cal T}}\xspace}
+\newcommand{\valueset}{\ensuremath{{\cal V}}\xspace}
+\newcommand{\ledgers}{\ensuremath{{\cal L}}\xspace}
+\newcommand{\gd}{\ensuremath{\mathsf{g}}\xspace}
+
+\newcommand{\snof}[1]{\ensuremath{\mathrm{sn}(#1)}\xspace}
+\newcommand{\nfof}[1]{\ensuremath{\mathsf{nf}(#1)}\xspace}
+\newcommand{\rkof}[1]{\ensuremath{\mathsf{rk}(#1)}\xspace}
+\newcommand{\valueof}[1]{\ensuremath{\mathrm{v}(#1)}\xspace}
+\newcommand{\addrof}[1]{\ensuremath{\mathrm{addr}(#1)}\xspace}
+\newcommand{\equals}[4]{\ensuremath{\mathsf{equals}(#1,#2,#3,#4)}\xspace}
+\newcommand{\coins}{\ensuremath{\mathrm{\mathbf{c}}}\xspace}
+\newcommand{\vold}{\ensuremath{\mathrm{v^{old}}}\xspace}
+\newcommand{\vbal}{\ensuremath{\mathrm{v^{bal}}}\xspace}
+\newcommand{\bal}{\ensuremath{\mathrm{bal}}\xspace}
+\newcommand{\rand}{\ensuremath{\mathrm{\mathbf{rcv}}}\xspace}
+\newcommand{\vnew}{\ensuremath{\mathrm{v^{new}}}\xspace}
+\newcommand{\ledger}{\ensuremath{\mathrm{L}}\xspace}
+\newcommand{\values}{\ensuremath{\mathrm{\mathbf{v}}}\xspace}
+\newcommand{\valuesof}[1]{\ensuremath{\values(#1)}\xspace}
+\newcommand{\addrs}{\ensuremath{\mathrm{\mathbf{a}}}\xspace}
+\newcommand{\addrsof}[1]{\ensuremath{\addrs(#1)}\xspace}
+
+\newcommand{\sqoftexset}{{\cal S}\xspace}
+\newcommand{\verifytx}[2]{\ensuremath{\mathsf{verify\mhyphen tx} (#1,#2)}\xspace}
+\newcommand{\serialnumbersof}[1]{\ensuremath{\mathrm{sn}(#1)}\xspace}
+\newcommand{\coinsof}[1]{\ensuremath{\coins(#1)}\xspace}
+\newcommand{\seqofcoins}{\ensuremath{\coins^*}\xspace}
+\newcommand{\txinput}{\ensuremath{\mathrm{x}}\xspace}
+\newcommand{\txinputs}{\ensuremath{\mathrm{\mathbf{x}}}\xspace}
+\newcommand{\seqoftxset}{\ensuremath{\txset^*}\xspace}
+\newcommand{\tx}{\ensuremath{\mathsf{tx}}\xspace}
+\newcommand{\aprand}{\ensuremath{\mathrm{pp}}\xspace}
+\newcommand{\coin}{\ensuremath{\mathrm{c}}\xspace}
+\newcommand{\ledgerset}{\ensuremath{\mathcal{L}}\xspace}
+\newcommand{\uniqueledgerset}{\ensuremath{\mathcal{L}^{\mathrm{unique}}}\xspace}
+\newcommand{\serialnums}{\ensuremath{\mathrm{\mathbf{sn}}}\xspace}
+
+\newcommand{\txinputset}{\ensuremath{\mathcal{I}}\xspace}
+
+\newcommand{\createtx}[2]{\ensuremath{\mathsf{create\mhyphen tx}(#1,#2)}\xspace}
+\newcommand{\decodebykey}[3]{\ensuremath{\mathsf{decode}_{#3}(#1,#2)}\xspace}%#3 is sk
+\newcommand{\decode}[2]{\ensuremath{\mathsf{decode}(#1,#2)}\xspace}
+   
+\newcommand{\key}{\ensuremath{\mathrm{sk}}\xspace}
+\newcommand{\keyof}[1]{\ensuremath{\key(#1)}\xspace}
+\newcommand{\keyset}{\ensuremath{{\mathcal K}}\xspace}
+
+
+\newcommand{\adv}{\ensuremath{{\mathcal A}}\xspace}
+\newcommand{\advprime}{\ensuremath{{\mathcal A'}}\xspace}
+\newcommand{\advs}{\ensuremath{{\mathcal{A}}}\xspace}
+\newcommand{\advaddrs}{\ensuremath{\addrs_{\adv}}\xspace}
+\newcommand{\coinsofserialnums}[2]{\ensuremath{\coins(#1,#2)}\xspace}
+\newcommand{\seq}{\ensuremath{\mathsf{r}}\xspace}
+\newcommand{\querseq}{\ensuremath{\mathsf{q}}\xspace}
+\newcommand{\sigquerseq}{\ensuremath{\mathsf{q^\sigma}}\xspace}
+\newcommand{\schnorr}{\ensuremath{\mathsf{Schnorr}}\xspace}
+\newcommand{\rawof}[1]{\ensuremath{\mathsf{raw(#1)}}\xspace}
+\newcommand{\honest}{\ensuremath{\mathcal H}\xspace}
+\newcommand{\ext}{\ensuremath{\mathcal \xi}\xspace}
+\newcommand{\G}{\ensuremath{\mathbb{G}}\xspace}
+\newcommand{\sigseq}{\ensuremath{\mathsf{\sigma}}\xspace}
+\newcommand{\sk}{\ensuremath{\mathsf{sk}}\xspace}
+\newcommand{\pk}{\ensuremath{\mathsf{pk}}\xspace}
+\newcommand{\sigquer}{\ensuremath{\mathsf{q^\sigma}}\xspace}
+\newcommand{\RO}{\ensuremath{\mathcal R}\xspace}
+\newcommand{\sig}{\ensuremath{\sigma}\xspace}
+\newcommand{\sign}{\ensuremath{\mathsf{sign}}\xspace}
+\newcommand{\versig}{\ensuremath{\mathsf{verifySig}}\xspace}
+\renewcommand{\sim}{\ensuremath{ {\mathcal S}}\xspace}
+\newcommand{\simprv}{\ensuremath{\sim_{\mathsf{sign}}}\xspace}
+\newcommand{\simro}{\ensuremath{\sim_{\RO}}\xspace}
+\newcommand{\str}{\ensuremath{\mathrm{x}}\xspace}
+\newcommand{\negl}{\ensuremath{\mathrm{negl}(\lambda)}\xspace}
+\newcommand{\msg}{\ensuremath{\mathbf m}\xspace}
+\newcommand{\dist}{\ensuremath{\mathrm{\pi}}\xspace}
+\newcommand{\oracle}{\ensuremath{\mathscr O}\xspace}
+\newcommand{\oracleprime}{\ensuremath{\mathscr O'}\xspace}
+
+\section{Signature schemes}
+%We assume all parties below have access to a random oracle \RO taking arbitrary strings as input and outputting uniform elements of \F.
+
+When we say an algorithm \adv is \emph{efficient}, when mean it runs in time \poly for the ``security parameter'' $\lambda$.
+
+
+ \begin{dfn}\label{dfn:sigscheme}
+Let \G be a group of prime order $r$.
+A signature scheme \sigscheme over \G in the random oracle model consists of algorithms $\sigscheme = (\sign,\versig,\sim= (\simprv,\simro))$
+where $\sign,\versig$ are oracle machines with access to an oracle \RO taking as input arbitrary strings and returning uniform elements of \F.
+Such that the following holds.
+ \begin{itemize}
+  \item The set of public/verification keys \set{\pk} is \G, and the set of private keys \set{\sk} is \F.
+  \item For $\sk \in \F$, the verification key of \sk is $\pk= \sk\cdot g$ for a fixed generator $g\in \G$.
+  \item We have the following ``zero-knowledge'' property:
+ Fix any efficient \adv.
+ Suppose that \adv interacts with \sim with two types of queries 
+  \begin{enumerate}
+   \item Queries \str, for an arbitrary string \str that are answered according to $\simro$.
+   \item Queries $(\pk,\msg)$, answered according to $\simprv$.
+  \end{enumerate}
+Let $\dist_1$ be the distribution of the sequence of queries and replies to \adv.
+Let $\dist_2$ be the distribution of the sequence of queries and replies to \adv when
+
+\begin{enumerate}
+ \item \RO takes the place of  $\sim_1$
+ \item $\sign^{\RO}(\sk,\msg)$ is returned instead of $\sim_2(\pk,\msg)$ where \sk is the secret key corresponding to \pk.
+\end{enumerate}
+Then the distance between $\dist_1$ and $\dist_2$ is \negl.
+\end{itemize}
+
+% 
+% 
+%  We say \sig is  \emph{simulation extractable with error $\eps$ over \G if:}
+% 
+%   There is an efficient \ext such that the following holds.  Fix any efficient \adv and consider the following process.
+%   \adv askes a sequence of queries to \sim as described in the zero-knowledge property above.
+%   Then \adv outputs $(\pk,\msg,\sig)$.
+%   Then, \ext receives as input the queries of \adv to \sim and its responses, and the internal randomness used by \adv.
+%   Now \ext, given access to rewinding and executing \adv as he wishes, outputs \sk.
+%   Then the probability that
+%   \begin{itemize}
+%    \item $\versig^{\simro}(\pk,\msg,\sig)$, and
+%    \item $\pk\neq \sk\cdot g$
+%   \end{itemize}
+% is at most $\eps$.
+% 
+
+%   We say \sig is \emph{randomizable extractable with error $\eps$ if:}
+%   for any efficient \adv there is an efficient extractor \ext such that the following holds.
+%   Suppose a party \honest somehow chooses $\ell= \poly$ keys $\sk_1,\ldots, \sk_\ell \in \F$ and
+%   sends the verification keys $P=\set{\pk_1,\ldots,\pk_\ell}$ to \adv.
+%   Then \adv is allowed to adaptively make \poly queries to \RO and to \honest.
+%   The queries to \honest are of the form $(\pk,\rho,m)$ for $\pk\in P,\rho\in \F$,
+%   and \honest replies with $\sign(\pk+\rho\cdot g, m)$.
+%   Finally, \adv outputs $(\pk^*,\msg^*,\sig^*)$
+%   Then, \ext receives as input the responses of \RO and \honest to \adv, and the internal randomness used by \adv,
+%   and $\ext$, using access to \adv, outputs \sk.
+%   Then the probability that 
+%   \begin{enumerate}
+%    \item $\versig(\pk^*,\msg^*,\sig^*)$, and 
+%    \item $\sk\cdot g \neq \pk$
+%    
+%   \end{enumerate}
+% is at most $\eps$
+
+We say \sigscheme is \emph{unforgeable w.r.t key randomization} if the following holds.
+Fix any efficient \adv.
+A party \oracle chooses uniform $\sk\in \F$ and sends $\pk = \sk\cdot g$ to \adv.
+\oracle also initializes an empty set $T$.
+\adv adaptively makes \poly queries of the form $(\alpha,\msg)$.
+\oracle replies with $\sig\defeq \sign(\pk+\alpha\cdot g, \msg)$
+and adds $(\alpha,\msg,\sig)$ to $T$.
+
+Finally \adv outputs $(\alpha^*,\msg^*,\sig^*)$.
+Let $\pk^*\defeq \pk+\alpha^*\cdot g$.
+ Then the probability that 
+  \begin{enumerate}
+   \item $\versig(\pk^*,\msg^*,\sig^*)$, and 
+   \item $(\alpha^*,\msg^*,\sig^*)\notin T$
+  \end{enumerate}
+is \negl.
+\end{dfn}
+
+% \begin{claim}
+% If \sigscheme is simulation extractable with error $\eps$ it is also randomizable extractable with error $\eps+\negl$.
+% \end{claim}
+% \begin{proof}
+% Have adv \adv against RE.
+% Define the following \adv' against SE:
+% \begin{enumerate}
+%  \item Start by choosing uniformly \set{\sk_1,\ldots,\sk_\ell} and 
+%  sending \set{\pk_1,\ldots,\pk_\ell} to \adv.
+%  \item When \adv asks a query to \RO, answer it according to \simro.
+%  \item When \adv asks a query $(\pk,\rho,\msg)$ to \honest, answer it with $\simprv(\pk+\rho\cdot g,\msg)$
+% \item When \adv outputs $(\pk^*,\msg^*,\sig^*)$, output the same message.
+%  \end{enumerate}
+% Let \ext' be the extractor guaranteed to exist for \adv'.
+% Now construct \ext for \adv as follows.
+% \adv is executed, and the \ext is given $P=\set{P_1,\ldots,P_\ell}$,\seq,\querseq,\sigseq,\sigquerseq
+% and its output $(\pk^*,\msg^*,\sig^*)$.
+% 
+% 
+% Note that (\adv')'s output is determined by the value
+% Note that the except for a negligible fraction of the time \adv succeeds relative to $\versig^{\RO}$ at the same
+% \adv' succeeds relative to $\versig^{\simro}$.
+% So \ext' is also a good extractor for \adv demonstrating the scheme has the $\eps'$ ``randomized extractability'' property for 
+% $\eps' = \eps +\negl$.
+% \end{proof}
+% 
+% 
+ 
+ 
+ 
+ 
+ We assume our group \G has a hard DL problem; meaning that for any efficient \adv,
+ given uniform $g,\sk\cdot g \in \G$ the probability of outputting \sk is \negl.
+ 
+ We define the non-malleable version of Schnorr's signature scheme:
+ 
+\paragraph{\underline{\schnorr:}} 
+ \paragraph{Parameters:}
+ Group \G of prime order $s$. Non-zero $g\in \G$.
+ \paragraph{Signing:}
+  Given message \msg and \sk, 
+ \begin{itemize}
+ \item Choose random $a\in \F$ and let $R\defeq a\cdot g$
+
+  \item Compute $c\defeq \RO(R,\pk,\msg)$
+  \item Let $u\defeq a+c\cdot \sk$.
+  \item Define $\sign^{\RO}(\sk,\msg) \defeq (R,u)$.
+ \end{itemize}
+\paragraph{Verifying:}
+ Given $\pk,\msg,\sig=(R,u)$, $\versig^{\RO}(\pk,\msg,\sig)$ 
+ accepts iff:
+
+\begin{itemize}
+ \item Computing $c\defeq \RO(R,\pk,\msg)$; we have $u\cdot g = R+c\cdot \pk$.
+\end{itemize}
+\paragraph{Simulating:}
+\begin{itemize}
+\item $\simro(\str)$ checks if \str has been queried before; if so answers consistently, otherwise answers uniformly in \F and records the answer. 
+ \item $\simprv(\pk,\msg)$: Choose uniform $c,u \in \F$.
+ Let $\str \defeq (\pk,\msg, u\cdot g - c\cdot \pk)$.
+ Check if $\simro(\str)$ has been defined.
+ If so, abort.  Otherwise define $\simro(\str)=c$ and return $(c,u)$.
+\end{itemize}
+\begin{remark}
+ At times when we wish to change the parameter $g$ we work with from default to an element $h$,
+ we will use it in the subscript, e.g. $sign_h^{\RO}(\sk,\msg)$.
+ 
+ We refer by $\schnorr' = (\sign',\versig')$ to the Schnorr scheme where \pk is omitted from the computation of $c$.
+\end{remark}
+\begin{thm}\label{thm:schnorr-nf}
+\schnorr is non-forgeable w.r.t randomization.
+\end{thm}
+\begin{proof}
+Similarly to \cite{rerandSig},
+we reduce to the non-forgeability of standard Schnorr (where the public key is not part of the signature \& without randomization)
+that was proven in \cite{schnorrSecurity}.
+
+
+Suppose we are given \adv interacting with \oracle as described above, and finally outputting $(\alpha^*,\msg^*,\sig^*)$.
+We construct \advprime that interacts with \oracleprime which is a ``standard'' Schnorr oracle.
+
+That is:
+\begin{enumerate} 
+\item \oracleprime begins by choosing a uniform $\sk\in \F$ 
+\item \oracleprime computes $\pk = \sk\cdot g$ and sends \pk to \advprime. \oracleprime intializes an empty set $T'$.
+\item \advprime sends queries \msg to \oracleprime and receives replies $\sig = \sign'_{\sk}(\msg)$. \oracleprime adds $(\msg,\sigma)$ to $T'$.
+\item After all queries \advprime outputs $(\msg^*,\sig^*)$.
+\end{enumerate}
+\advprime wins if
+\begin{itemize}
+   \item $\versig'(\pk,\msg^*,\sig^*)$, and 
+   \item $(\msg^*,\sig^*)\notin T'$
+\end{itemize}
+ 
+\advprime will simulate (\adv)'s interaction with \oracle using \oracleprime:
+Given a query $(\alpha,\msg)$ of \adv, \advprime queries \oracleprime with $\msg'\defeq(\pk+\alpha\cdot g,\msg)$,
+to receive reply $\sig'=(R,u')$ - \emph{this is a $\schnorr'$-signature of $\msg'$ with \sk, and we now convert this to a $\schnorr$-signature of $\msg$ with $\sk+\alpha$}.
+Let $c\defeq \RO(R,\msg')=\RO(R,\pk+\alpha\cdot g, \msg)$. It sends $\sig\defeq (R,u\defeq u'+c\alpha)$ to \adv.
+
+
+ We have 
+\[u\cdot g = u'\cdot g +c\alpha\cdot g = R+c\cdot \pk +c\alpha\cdot g = R+ c\cdot (\pk+\alpha\cdot g) .\]
+So we have $\versig(\pk+\alpha\cdot g,\msg,\sig)$.
+Also $R$ is uniformly distributed, thus \advprime is answering (\adv)'s queries with the same distribution \oracle would have.
+
+Note that the mapping $F(\alpha,\msg,\sig)\defeq (\msg',\sig')$
+where $\msg'\defeq(\pk+\alpha\cdot g,\msg),\sig'\defeq (R,u-c\alpha)$ is injective.
+
+% $T=\set{(\alpha,\msg,\sig)}$
+Let $T$ be the set of tupples $(\alpha,\msg,\sig)$ such that \adv queried $(\alpha,\msg)$ and $\adv'$ answered \sig.
+We have $T'= \sett{F(x)}{x\in T}$.
+
+When \adv finally outputs $x^*=(\alpha^*,\msg^*,\sig^*)$;
+\advprime outputs $F(x^*)$. 
+As $F$ is injective $x^* \notin T$
+implies $F(x^*)\notin T'$.
+
+Denote $(m',\sigma')\defeq F(x^*)$.
+From \cite{schnorrSecurity}'s results on unforgeability of $\schnorr'$, the probability that 
+\begin{itemize}
+   \item $\versig'(\pk,\msg',\sig')$, and 
+   \item $(\msg',\sig')\notin T'$
+\end{itemize}
+is \negl.
+Noting that $\versig'(\pk,\msg',\sig')\equiv \versig(\pk+\alpha\cdot g, \msg^*,\sig^*)$,
+this means that the probability that
+\begin{itemize}
+   \item $\versig(\pk+\alpha\cdot g,\msg^*,\sig^*)$, and 
+   \item $x^* \notin T$
+\end{itemize}
+is \negl.
+This is exactly what we had to prove.
+\end{proof}
+
+ 
+
+
+%  For the proof of the theorem, note that we can think of \sim as uniform $(\seq, \sigseq) \in \F^{3Q}$ and answering queries accordingly.
+%  (Perhaps aborting on the way.)
+% \begin{thm}
+% For any $\eps= 1/\poly$,  \schnorr is simulation extractable with error $\eps$.
+% \end{thm}
+% \begin{remark}
+%  An important property of our definition and this theorem is that the ``extractor succeeds almost always when the prover succeeds'';
+%  in contrast with, e.g., Theorem 3 of \cite{FKMV12}
+% \end{remark}
+% 
+% \begin{proof}
+%  The proof is similar to ones in \cite{PS00,firstMPC}.
+%  
+%  
+%  Suppose \adv has made $Q$ queries  $q_1,\ldots,q_Q$ to $\simro$, receiving replies $\seq =\seq_1,\ldots,\seq_Q$;
+%  and queries $\sigquer = \sigquer_1,\ldots,\sigquer_Q$ to \simprv receiving replies $\sigseq = \sigma_1,\ldots,\sigma_Q$.
+% Suppose it has prouced $(\pk,\msg,\sig)$ such that
+% $\versig^\simro(\pk,\msg,\sig)=\acc$
+% 
+% 
+%  \newcommand{\rest}[2]{\ensuremath{#1|_{#2}}\xspace}
+% \newcommand{\bigset}{\ensuremath{W|_{\seq\setminus j}}\xspace}
+% \newcommand{\bigsetspecific}{\ensuremath{W|_{\seq\setminus j_s(\seq)}}\xspace}
+% \newcommand{\smallset}{\ensuremath{W_{\seq,s}}\xspace}
+% \newcommand{\alg}{\ensuremath{\mathsf{alg}}\xspace}
+% \newcommand{\domainofsequence}{\ensuremath{[\rodomsize]^Q}\xspace}
+% % \begin{claim}\label{clm:goodelems}
+% % For any polynomial $P$, 
+% %  there is an algorithm \alg that for a $(1-1/P(\log r))$-fraction of good \seq,
+% %  obtains $\secrets(\seq)$ given \seq with probability $1-1/r$ in time \polylog.
+% % \end{claim}
+% 
+% % Denote $S=\cup_{i\in\players}\secrets_i$, where $\secrets_i$ is the vector of variables $\tau_i,\rho_{A,i},\rho_{B,i},\alpha_{A,i},\alpha_{B,i},\alpha_{C,i},\gamma_i,\beta_i$.
+% 
+% Think of \sigseq, and \adv's randomness as fixed. We'll show that except for a $1/P$ fraction of $\seq \in \F^Q$,
+% if $(\seq,\sigseq)$ is good we retrieve \sk except with probability $2^{-\lambda}$.
+% Suppose that $\sig = (R,u)$.
+% Let us call \seq $\sigseq$-good if   $(\seq,\sigseq)$ is good  
+% Denote by $J\in [Q]$ the index such that $q_J = (\pk,\msg,R)$.
+% % 
+% % For good \seq and $s\in S$, we denote by $i_s(\seq)$
+% % the index corresponding to $s$ in $I(\seq)$ and by $j_s(\seq)$
+% % the index corresponding to $s$ in $J(\seq)$.
+% % Note that for good \seq we always have $i_s(\seq)<j_s(\seq)$.
+% 
+% For $j\in [Q]$, and $\seq\in \F^Q$,
+% we denote by \bigset the strings $\seq'\in \F^q$
+% that are equal to \seq outside of $j$.
+% For $\seq\in \F^Q$,
+% we denote by \smallset the set of good $\seq'\in\F^q$ that are equal
+% to \seq outside of $j$, and have $J(\seq')=J(\seq)$.
+% Note that the set \smallset is determined by the index $j$
+% and the values of \seq outside of $j$; thus, there are at most $\F^{Q-1}\cdot Q$ such distinct sets.
+% Note also that $\smallset \subseteq \bigsetspecific$.
+% 
+% Now given good \seq, \sim does the following.
+% Denote $P'\defeq 2P\cdot Q$.
+% Letting $j\defeq J(\seq)$, \alg samples $2P'(\lambda)\cdot \lambda$ strings \seq' from \bigset.
+% For each one he checks if $\seq'\in \smallset$ and if $\seq'_{j}\neq \seq_{j}$.
+% If both checks hold, it means, that $\adv(\sigseq,\seq)=(\pk,\msg,(R,u))$ and $\adv(\sigseq,\seq')=(\pk,\msg,(R,u'))$ are two valid signatures of \msg under
+% \pk. This means \ext can obtain $\sk$ using Schnorr's extractability property.
+% 
+% 
+% Now the question is what is the probability of not finding a sequence \seq' enabling extraction of $\sk$.
+% We claim this is at most $2^{-\lambda}$, when the density of \smallset in \bigset is at least $1/P'(\lambda)$:
+% In this case the density of elements of \smallset such that $\seq'_{j}\neq \seq_{j}$ is at least $1/P'(\lambda)-1/r\geq 1/2P'(\lambda)$ for large enough $\lambda$.
+% Thus, the probability that no such element \seq' is found is at most $(1-1/2P'(\lambda))^{ 2P'(\lambda)\cdot\lambda}\leq e^{-\lambda}$.
+% 
+% Now we must bound the density of good \seq that do not have this property.
+% Each such \seq belongs to a set \smallset containing at most $r/P'(\lambda)$ elements.
+% Thus, there at most 
+% \[\frac{r \cdot r^{Q-1}\cdot Q}{P'(\lambda)} = \frac{r^Q\cdot Q^2}{P(\lambda)\cdot Q} = \frac{r^Q}{P(\lambda)}\]
+% such elements, which is a $1/P(\lambda)$ fraction of the space.
+% 
+% In summary, for each value of \sigseq,
+% if the fraction of values \seq such that $(\sigseq,\seq)$ is good is $\eps_\sigseq$.
+% We succeed in extraction, except for a $1/P$-fraction of those.
+% 
+% 
+% \end{proof}
+
+\newcommand{\createaddr}{\ensuremath{\mathsf{createaddr}}\xspace}
+\newcommand{\makeinput}{\ensuremath{\mathsf{makeinput}}\xspace}
+\newcommand{\makeoutput}{\ensuremath{\mathsf{makeoutput}}\xspace}
+\newcommand{\makeoutputandnote}{\ensuremath{\mathsf{makeoutputandnote}}\xspace}
+\newcommand{\maketx}{\ensuremath{\mathsf{maketx}}\xspace}
+\newcommand{\makerandomizedtx}{\ensuremath{\mathsf{makerandomizedtx}}\xspace}
+\newcommand{\formtx}{\ensuremath{\mathsf{formtx}}\xspace}
+\newcommand{\signtx}[1]{\ensuremath{\mathsf{signtx}(#1)}\xspace}
+\newcommand{\notecom}{\ensuremath{\mathbf{NC}}\xspace}
+\newcommand{\valcom}{\ensuremath{\mathbf{VC}}\xspace}
+\newcommand{\esk}{\ensuremath{\mathsf{esk}}\xspace}
+\newcommand{\note}{\ensuremath{\mathsf{note}}\xspace}
+\renewcommand{\notes}{\ensuremath{\overrightarrow{\mathsf{note}}}\xspace}
+\newcommand{\noteenc}{\ensuremath{\mathsf{enc}}\xspace}
+\newcommand{\epk}{\ensuremath{\mathsf{epk}}\xspace}
+% \newcommand{\pk}{\ensuremath{\mathsf{pk}}\xspace}
+\newcommand{\gr}{\ensuremath{\mathsf{g}_\mathbf{r}}\xspace}
+\newcommand{\gsig}{\ensuremath{\mathsf{g}_{\mathbf{sig}}}\xspace}
+\newcommand{\gnk}{\ensuremath{\mathsf{g}_{\mathbf{n}}}\xspace}
+\newcommand{\gv}{\ensuremath{\mathsf{g}_{\mathbf{v}}}\xspace}
+% \newcommand{\pk}{\ensuremath{\mathsf{pk}}\xspace}
+\newcommand{\rawtx}{\ensuremath{\mathsf{raw_{tx}}}\xspace}
+\newcommand{\pretx}{\ensuremath{\mathsf{pre\mhyphen tx}}\xspace}
+\newcommand{\sigval}{\ensuremath{\sigma_{\mathsf{val}}}\xspace}
+\newcommand{\rcvs}{\ensuremath{\overrightarrow{\mathsf{rcv}}}\xspace}
+\newcommand{\rcms}{\ensuremath{\overrightarrow{\mathsf{rcm}}}\xspace}
+\newcommand{\pak}{\ensuremath{\mathsf{pak}}\xspace}
+\newcommand{\ak}{\ensuremath{\mathsf{ak}}\xspace}
+\newcommand{\rcv}{\ensuremath{\mathsf{rcv}}\xspace}
+\newcommand{\rk}{\ensuremath{\mathsf{rk}}\xspace}
+\newcommand{\nk}{\ensuremath{\mathsf{nk}}\xspace}
+\newcommand{\ovk}{\ensuremath{\mathsf{ovk}}\xspace}
+\newcommand{\ivk}{\ensuremath{\mathsf{ivk}}\xspace}
+\newcommand{\IVK}{\ensuremath{\mathsf{IVK}}\xspace}
+\newcommand{\nsk}{\ensuremath{\mathsf{nsk}}\xspace}
+\newcommand{\ask}{\ensuremath{\mathsf{ask}}\xspace}
+\newcommand{\signallinputs}{\ensuremath{\mathsf{sign\mhyphen all\mhyphen inputs}}\xspace}
+\newcommand{\spendverify}{\ensuremath{\mathsf{spendverify}}\xspace}
+\newcommand{\pubinp}{\ensuremath{\mathrm{pub}}\xspace}
+\newcommand{\wit}{\ensuremath{\mathsf{w}}\xspace}
+\newcommand{\outstatement}[1]{\ensuremath{\mathsf{OUT}(#1)}\xspace}
+\newcommand{\spendstatement}[1]{\ensuremath{\mathsf{SPEND}(#1)}\xspace}
+\newcommand{\cm}{\ensuremath{\mathsf{cm}}\xspace}
+\newcommand{\nf}{\ensuremath{\mathsf{nf}}\xspace}
+\renewcommand{\path}{\ensuremath{\mathsf{path}}\xspace}
+\newcommand{\g}{\ensuremath{\mathsf{g}}\xspace}
+\newcommand{\cv}{\ensuremath{\mathsf{cv}}\xspace}
+\newcommand{\rt}{\ensuremath{\mathsf{rt}}\xspace}
+\newcommand{\prf}{\ensuremath{\pi}\xspace}
+\renewcommand{\input}{\ensuremath{\mathsf{input}}\xspace}
+\renewcommand{\output}{\ensuremath{\mathsf{output}}\xspace}
+\newcommand{\inputs}{\ensuremath{\overrightarrow{\mathsf{input}}}\xspace}
+\newcommand{\invals}{\ensuremath{\overrightarrow{\mathsf{v}}}\xspace}
+\newcommand{\outvals}{\ensuremath{\overrightarrow{\mathsf{ov}}}\xspace}
+\newcommand{\sigs}{\ensuremath{\overrightarrow{\mathsf{\sigma}}}\xspace}
+\newcommand{\alphas}{\ensuremath{\overrightarrow{\mathsf{\alpha}}}\xspace}
+\newcommand{\aks}{\ensuremath{\overrightarrow{\mathsf{ak}}}\xspace}
+\newcommand{\asks}{\ensuremath{\overrightarrow{\mathsf{ask}}}\xspace}
+\newcommand{\sks}{\ensuremath{\overrightarrow{\mathsf{sk}}}\xspace}
+\newcommand{\outputs}{\ensuremath{\overrightarrow{\mathsf{output}}}\xspace}
+\newcommand{\rcm}{\ensuremath{\mathsf{rcm}}\xspace}
+\newcommand{\val}{\ensuremath{\mathsf{v}}\xspace}
+\newcommand{\outval}{\ensuremath{\mathsf{ov}}\xspace}
+ \newcommand{\NF}{\ensuremath{\mathbf{NF}}\xspace}
+% \newcommand{\createaddr}{\ensuremath{\mathsf{createaddr}}\xspace}
+\newcommand{\provoutput}{\ensuremath{\pi_{\mathsf{output}}}\xspace}
+\newcommand{\provspend}{\ensuremath{\pi_{\mathsf{spend}}}\xspace}
+\newcommand{\symencrypt}[2]{\ensuremath{\mathbf{ENC}_{#1}(#2)}\xspace}
+\newcommand{\symdecrypt}[2]{\ensuremath{\mathbf{DEC}_{#1}(#2)}\xspace}
+\newcommand{\sighash}{\ensuremath{\mathbf{sighash}}\xspace}
+\newcommand{\outverify}{\ensuremath{\mathbf{outverify}}\xspace}
+
+\section{Description of Sapling}
+ \subsection{Basic components}
+\subsection*{Functions, and their requirements:}
+We do not explicitly state function domains and ranges; see the spec for more details.
+Whenever discussing a function in the properties below, we always think of an infinite sequence of functions indexed by the security paramter $\lambda$.
+\begin{enumerate}
+ \item For any fixed values $\gd,\pk,\val$, and for any $\eps\geq 0$, $\notecom(\gd,\pk,\val,\rcm)$ is $\eps$-close to uniform when $\rcm$ is $\eps$-close to uniform.
+ \item \notecom is collision resistant - i.e. the probability of finding $\note,\note'$ such that $\notecom(\note)=\notecom(\note')$ is \negl. \footnote{A caveat here is that this is true when the $\rcm$ parameter is thought of as a field element; in the actual circuit it is received as a string of bits where some elements of $\F$ have multiple representations; inspection of the proof shows that it suffices that CR w.r.t \rcm as a field element; same story with \rcv in \valcom.}
+\item For any fixed \val and any $\eps\geq 0$, $\valcom(\val,\rcv)$ is $\eps$-close to uniform whenever \rcv is $\eps$-close to uniform. 
+\item \valcom is collision-resistant.
+\item \sighash is collision-resistant.
+\item \IVK is collision-resistant.
+\item \NF is modeled as a random oracle outputting at least $\lambda$ bits (and thus is in particular, collision-resistant).
+\end{enumerate}
+\paragraph{Generators of \G}
+We assume we are given generators $\gsig,\gnk,\gr,\gv$ that were sampled in a way that except w.p \negl
+an efficient \adv cannot discover the discrete log relation between any two of them.
+
+\subsection*{Statements:}
+\underline{\textbf{\outstatement{\cv,\cm,\epk}:}}
+I know $\note=(\gd,\pk,\val,\rcm),\rcv,\esk$ such that 
+\begin{enumerate}
+ \item $\cm = \notecom(\note)$.
+ \item $\cv = \valcom(\val,\rcv)$.
+ \item $\epk=\esk\cdot \gd$.
+ \item $\gd$ has order greater than eight.
+\end{enumerate}
+\noindent
+\underline{\textbf{\spendstatement{\rt,\cv,\nf,\rk}:}}
+I know $\path,\pos,\note=(\gd,\pk,\val,\rcm),\cm,\rcv,\alpha,\ak,\nsk$ such that 
+\begin{enumerate}
+ \item $\cm = \notecom(\note)$.
+ \item \path is a merkle path from \cm at position \pos to \rt.
+ \item $\rk = \ak + \alpha \cdot \gsig$.
+ \item Setting $\nk \defeq \nsk\cdot \gnk, \ivk \defeq \IVK(\ak,\nk)$, we have $\pk=\ivk\cdot \gd$.
+ \item $\nf = \NF(\nk,\cm,\pos)$
+\end{enumerate}
+
+\subsection*{Components}
+An \emph{input base}, usually denoted \input, will consist of the values required to make an input in a Sapling transaction, except the spending and proving key; namely $\input = (\note,\path,\pos)$ where
+\begin{itemize}
+ \item \note is a note
+ \item \path is a path in a merkle tree beginning from a leaf of value $\cm=\notecom(\note)$.
+ \item \pos is the position of \cm amongst the leaves of the Merkle tree (\pos is redundant here as it can be derived from \path, but convenient).
+\end{itemize}
+
+
+A \emph{transaction input}, usually denoted \inp, is the final form an input appears in a transaction; \inp consists of 
+\begin{enumerate}
+ \item A value commitment \cv.
+ \item A nullifier \nf.
+ \item A Merkle root \rt of the tree containing the used note.
+ \item A public key \rk that is (allegedely) a randomized version of the spent note's proving key \ak.
+ \item A SNARK proof \prf for the statement \spendstatement{\rt,\cv,\nf,\rk}.
+\end{enumerate}
+
+
+We make the simplifying assumption in this writeup; that \emph{there is only one spending key $(\ask,\nsk)$ involved, and all addresses are diversifed addresses derived from this spending key}.
+For the indistinguishability property, we make the simplifying assumption that the Merkle tree used is always the one consisting of all ledger transaction up to the point of the new transaction (whereas in reality, one might prefer to use a somewhat older tree to protect against the possiblity of block reorgs. Thus in practice there may be some leakage about the input note's ``age'' that is not captured here).
+
+\subsection{Methods}
+
+We use the convention that $\ell$ denotes the number of inputs in a transaction, and $s$ the number of outputs.
+
+\noindent
+\underline{$\makeinput(\input=(\note,\path,\pos),\pak,\rcv,\alpha)$}
+
+where $\pak=(\ak,\nsk)
+,\note=(\gd,
+\pk,\val,\rcm)$
+\begin{enumerate}
+\item \cm = \notecom(\note)
+ \item \nf = \NF(\cm,\nk,\pos)
+ \item Define $\rk\defeq \ak +\alpha\cdot \g, \cv\defeq  \val\cdot \gv+ \rcv\cdot \gr $.
+ \item Define $\prf = \provspend(\rt,\nf,\rk,\cv;\note,\pak,\alpha,\path,\pos)$.
+ \item Output $(\nf,\rt,\rk,\cv,\pi)$.
+\end{enumerate}
+
+\noindent
+\underline{\makeoutput(\note=(\gd,\pk,\val,\rcm),\rcv)},
+\begin{enumerate}
+ \item Choose random $\esk\in \F$.
+ \item Let $\cv\defeq \valcom(\val,\rcv) = \val\cdot \gv + \rcv\cdot \gr$.
+ \item Let $\note = (\gd,\pk,\val,\rcm)$ and $\cm\defeq \notecom(\note)$.
+ \item Let $\epk = \esk\cdot \gd$.
+ \item Let $\noteenc = \symencrypt{\esk\cdot \gd}{\note}$
+ \item Let $\prf = \provoutput(\epk,\cm,\cv;\note,\rcv,\esk)$.
+ \item Output $(\cv,\cm,\epk,\prf,\noteenc)$
+\end{enumerate}
+\underline{\makeoutputandnote(\gd,\pk,\val)},
+\begin{enumerate}
+ \item Choose random $\rcm,\rcv,\esk\in \F$.
+ \item Let $\cv\defeq \val\cdot \gv + \rcm\cdot \gr$.
+ \item Let $\note = (\gd,\pk,\val,\rcm)$ and $\cm\defeq \notecom(\note)$.
+ \item Let $\epk = \esk\cdot \gd$.
+ \item Let $\noteenc = \symencrypt{\esk\cdot \gd}{\note}$
+ \item Let $\prf = \provoutput(\epk,\cm,\cv;\note,\rcv,\esk)$.
+ \item Let $\note \defeq (\gd,\pk,\val,\rcm)$. Output $(\cv,\cm,\epk,\prf,\noteenc,\note)$
+\end{enumerate}
+\noindent
+\underline{\formtx(\rawtx=(\inps,\outs,\vbal),\rcvs)}
+
+\begin{enumerate}
+ \item Let $r\defeq\sum_{i=1}^\ell \rcv_i - \sum_{i=\ell+1}^{\ell+s}\rcv_i$
+ \item Let $S\defeq\sum_{i=1}^\ell \cv_i - \sum_{i=\ell+1}^{\ell+s}\cv_i-\vbal\cdot \gv$
+ \item Let $\sigval \defeq \sign_{\gr}(r,\sighash(\rawtx))$.
+ \item Output $\pretx\defeq (\rawtx,\sigval)$.
+\end{enumerate}
+
+% \underline{\verifyinput{\inp=(\nf,\rt,\rk,\pi}}
+\noindent
+\underline{\signtx{\pretx=(\rawtx,\sigval),\asks,\alphas}}
+\begin{enumerate}
+ \item For each $i\in [\ell]$, let $\sigma_i\defeq \sign(\ask_i+\alpha_i,\sighash(\rawtx))$
+ \item Let $\sigs\defeq (\sig_1,\ldots,\sig_\ell)$.
+ \item Output $(\rawtx,\sigs)$.
+\end{enumerate}
+
+\noindent
+\underline{\makerandomizedtx(\rawtx=(\inputs,\outputs,\vbal)}
+where $\input_j = (\note_j,\pak_j,\path_j,\pos_j), \output_j =(\gd_j,\pk_j,\val_j)$
+\begin{enumerate}
+ \item Choose random $\rcms, \alphas \leftarrow \F^{\ell},\rcvs\in \F^s$.
+ \item For $j\in [\ell]$, $\inp_j = \makeinput(\input_j,\rcv_j)$
+ \item For $j\in [s]$, $\out_j=\makeoutput(\output_j,\rcm_j,\rcv_j)$
+ \item $\pretx = \formtx(\inps,\outs,\vbal)$.
+ \item Choose random $\alphas\in \F^{\ell+s}$.
+ \item Let $\tx = \signtx{\pretx,\ask,\alphas}$
+\end{enumerate}
+
+\noindent
+\underline{\maketx(\inputs,\outputs,\rcvs,\ask,\pak)}
+where $\input_j = (\val_j,\note_j,\pak_j,\path_j,\pos_j), \output_j =(\gd_j,\pk_j,\val_j,\rcm_j)$
+\begin{enumerate}
+\item Choose random $\alphas\in\F^{\ell}$.
+ \item For $j\in [\ell]$, $\inp_j = \makeinput(\input_j,\rcv_j,\alpha_j,\pak)$
+ \item For $j\in [s]$, $\out_j=\makeoutput(\output_j,\rcv_j)$
+ \item Let $\vbal \defeq \sum_{i=1}^\ell\val_i - \sum_{j=\ell+1}^{\ell+s}\val_j$.
+ \item $\pretx = \formtx(\inps,\outs,\vbal,\rcvs)$.
+ \item Let $\tx = \signtx{\pretx,\alphas,\ask}$
+\end{enumerate}
+
+\noindent
+\underline{\verifytx(\rawtx,\sigs)},
+\begin{enumerate}
+ \item For each $\inp_i =(\rt,\cv,\nf,\rk,\prf)\in \inps(\tx)$,
+ \begin{itemize}
+  \item check that $\spendverify(\rt,\cv,\nf,\rk;\prf)$.
+  \item Check that $\versig^{\RO}_{\gsig}(\rk,\sighash(\rawtx),\sig_i)$
+ \end{itemize}
+\item For each $\out = (\cv,\cm,\epk,\prf,\noteenc)\in\outs(\tx)$, check that  $\outverify(\cv,\cm,\epk;\prf)$
+\item Let $S\defeq\sum_{i=1}^\ell \cv_i - \sum_{i=\ell+1}^{\ell+s}\cv_i-\vbal\cdot \gv$
+\item Check that .
+\end{enumerate}
+
+
+%where $\note =$ 
+
+
+
+
+
+\section{Non-Malleability of Sapling w.r.t. delegated spenders}
+
+\subsection*{Modelling the adversary:}
+We wish to show that the delegated spender cannot create any new transactions of her own.
+We model this claim with the following non-malleability game:
+We model the honest signer as an oracle \oracle that \adv interacts with as follows.
+% 
+% \paragraph{Create address queries}
+% \oracle stores an initially empty set $K$ of secret keys to its addresses.
+% When \adv issues a \createaddr query. \oracle
+% \begin{enumerate}
+%  \item Chooses random $\sk \leftarrow \keyset$
+%  \item Adds $\sk$ to $K$.
+%  \item Derives the corresponding proof authorizing key $\pak(\sk)$.
+%  \item Sends \pak to \adv.
+% \end{enumerate}
+
+
+\oracle begins by choosing a new spending key $(\ask,\nsk)\leftarrow \keyset$ and sending the corresponding proof authorizing key
+$\pak=(\ak,\nsk)$ to \adv.  Where $\ak=\ask\cdot \g$.
+
+
+Afterwords, 
+\adv can make \signallinputs queries to \oracle,
+which intuitively correspond to asking for signatures on transactions whose inputs have spending key $(\ask,\nsk)$ (though see remark). 
+\paragraph{Sign-all-inputs queries}% - $\signallinputs(\rawtx,\aks,\alphas)$}
+\begin{enumerate}
+ \item \adv sends $(\pretx=(\rawtx,\sigval),\alphas)$ to \oracle.
+ Where $\rawtx = (\inps,\outs,\vbal)$
+ \item \oracle checks if $\spendverify(\pubinp_i,\prf_i)$ holds for each $i\in [\ell]$ and otherwise aborts.
+ \item  \oracle computes for $i\in [\ell]$, $\sig_i = \sign_{\g}(\ask+\alpha_i,\sighash(\rawtx))$.
+ \item Let $\sigs\defeq (\sig_1,\ldots,\sig_\ell)$. \oracle return $\tx\defeq(\rawtx,\sigval,\sigs)$. 
+\end{enumerate}
+\begin{remark}
+ The second item is another way of saying we assume \adv can only ask \oracle for signatures of transactions with legitimate spend proofs.
+ Otherwise the proof currently fails as we need to be able to extract the witness from each input.
+\end{remark}
+
+% \textbf{\oracle must record its answers to previous \signallinputs queries and answer identically to repeating queries}
+% \begin{remark}
+% This requirement is needed for the non-malleability property stated in Claim \ref{clm:nmal}. Different signatures on repeating queries enable \adv to violate the claim by mixing and matching different signatures for the same raw transaction. Alternatives are to only demand the non-signature part is NM, or to have each $\sig_i$, also sign the previous signatures.
+%  
+% \end{remark}
+
+
+\paragraph{Terminology:}
+We refer below to a transaction \tx as $\tx=(\rawtx,\sigval,\sigs)$, where \sigs contains the $\ell$ input signatures and \sigval is as described above in 
+\maketx{} 
+that are added during \signallinputs \emph{and} the signature \sigval added in the last step of \maketx.
+
+Non-malleability says, \adv should not be able to create a new valid transaction with inputs belonging to \oracle,
+even after seeing transactions of its choice with inputs of \oracle. New will mean that the \rawtx part will be new.
+(If we had changed the signature scheme to sign in order and have each signature sign the previous ones we could have required that
+\tx including the signature part must be different from all previous transactions).
+
+The way we formalize ``transaction with inputs of \oracle'' is that the transaction created by \adv contains 
+overlapping nullifiers with the transactions signed previously by \oracle; precisely transactions that are outputs of \signallinputs queries.
+
+\begin{remark}\label{rem:weirdstuff}
+ A somewhat odd thing about the construction with the delegated spender, is that valid transactions signed by \oracle, do not exactly correspond to transactions whose inputs \oracle knows the spending key of. We can only say \oracle and \adv \emph{together} know the spending key.
+ For example, given $(\ak,\nsk)$, \adv can choose random $s\in \F$, set $\ak' \defeq \ak + s\cdot \g$.   
+ Now when \adv wants to sign an input in address \ak', i.e. with some randomized key $\rk = \ak'+ \alpha \g  = \ak + (s+\alpha)\cdot \g$,
+ it can give \oracle the randomization $\alpha' = s+\alpha$.
+ 
+ A way to avoid these oddities is to have \oracle only sign transactions where he recognizes the nullifiers as belonging to a note of his.
+ For our purposes here, we get a stronger result without this restriction by showing non-malleability holds when \oracle signs \emph{any} transaction.
+\end{remark}
+
+
+
+\paragraph{Some more terminology}
+Given a validly formatted transaction $\tx=((\inps,\outs,\vbal), \sigval,\sigs)$,
+we define 
+\begin{itemize}
+ \item \nfof{\tx} to be the set of nullifiers appearing in one of its inputs; so $\nfof{\tx}\defeq \sett{\nfof{\inp}}{\inp\in\inps}$.
+\item \rkof{\tx} the set of randomized public keys appearing in inputs of \tx, so $\rkof{\tx}\defeq \sett{\rkof{\inp}}{\inp\in\inps}$.
+\item $\rawof{tx}\defeq (\inps,\outs,\vbal)$. For a set $T$ of validly formed transactions we define $\rawof{T}\defeq \sett{\rawof{\tx}}{\tx\in T}$
+\end{itemize}
+\begin{claim}[Non-malleability w.r.t delegated spenders]\label{clm:nmal-sapling}
+Fix any efficient \adv interacting with \oracle as described above.
+Let $T=\set{\tx'}$ be the set of transactions that are replies of \oracle to \adv's \signallinputs queries.
+The probability that \adv manages to output a ledger \ledger and transaction \tx such that
+
+\begin{enumerate}
+ \item	$\verifytx{\ledger}{\tx}=\acc$,
+ \item  $\rawof{\tx}$ is not a prefix of an element of $T$.
+ \item $\nfof{\tx} \cap \nfof{\tx'}\neq \emptyset$ for some  $\tx'\in T$.
+\end{enumerate}
+is \negl. 
+\end{claim}
+\begin{proof}
+Let \adv be an algorithm that after interacting with \oracle as described above outputs \ledger,\tx.
+Let \eps be the probability that \ledger, \tx satisfy the above.
+
+We construct \advprime that receives a randomized forgery challenge for \schnorr as described in Definition \ref{dfn:sigscheme},
+and with probability $\eps-\negl$ either
+\begin{itemize}
+\item outputs a collision of \sighash
+\item outputs a collision of \NF, 
+ \item outputs a collision of \notecom, 
+ \item outputs a collision of \IVK, 
+\item  Constructs a signature forgery for \schnorr w.r.t randomization.
+\end{itemize}
+
+
+Then, from CR of \sighash, \NF,\notecom,\IVK and Theorem \ref{thm:schnorr-nf} the claim follows.
+
+\advprime works as follows:
+\begin{enumerate}
+\item \advprime will receive a challenge \ak for the signature scheme \schnorr from a party \oracle.
+ \item \advprime chooses random $\nsk\in \G$ and sends to \adv the proof authorizing key $\pak=(\nsk,\ak)$ 
+ \ariel{note that here we need to make a spending key that is not from the same seed \sk}
+ \item When \adv makes a \signallinputs query $(\rawtx,\alphas)$ \advprime first checks that the proofs in \rawtx are valid (as \oracle does in the description of \signallinputs queries) and then answers with \sigs where $\sig_i\defeq \simprv(\pk+\alpha\cdot g,\msg)$. If during invocations to \simprv, \simro is queried on a point on which \adv queried \RO, \advprime aborts. (Note that the point queried by \simro is $(R,\pk,\msg)$ for a uniform $R$ chosen only during the execution of \simprv, so the probability such a point was already queried is \negl.)
+ \item When \advprime makes a query to \RO, \adv answers according to \RO unless the query has been answered according to \simro during invocations of \simprv in \signallinputs queries; in which case \advprime answers according to \simprv. (This doesn't change the distribution of \RO from the perspective of \adv.)
+ \item When \adv outputs \ledger, \tx: \advprime checks that it indeed satisfies the challenge - that is 
+  $\verifytx{\ledger}{\tx}$; \tx contains an input \inp with $\nf=\nfof{\inp}$ being equal to $\nf(\inp')$ for some $\inp'\in \tx'$ for some $\tx'\in T$;
+  appearing in one of the \signallinputs queries of \adv; and $\rawtx\notin \rawof{T}$. If not \advprime aborts.
+\item \advprime checks if  $\sighash(\rawtx)= \sighash(\rawtx')$ for some $\tx'\in T$ with $\rawtx'\neq \rawtx$. If so it outputs $(\rawtx,\rawtx')$ as a collision of \sighash.
+ \item Let $R\defeq\set{\rk_1,\ldots,\rk_\ell}$ be the randomized public keys in the inputs of \tx,
+ and $R'\defeq \set{\rk'_1,\ldots,\rk'_{\ell'}}$ be the randomized public keys in the inputs of \tx'.
+ \advprime checks if $R'\cap R \neq \emptyset$, i.e. $\rk_i=\rk'_j$ for some $i,j$.
+ In this case it outputs the forgery $(\alpha'_j,\sighash(\rawtx),\sig_i)$.
+ \item Otherwise let \ext be the extractor guaranteed to exist for the combined party \advprime,\oracle up to the point in
+ step 5 where \adv outputted \tx.
+ Except with probability \negl, \ext outputs a witness $\wit=(\note,\pak=(\ak,\nsk),\alpha,\path,\pos)$.
+ Similarly there is an extractor \ext' for the input \inp' in \tx' giving us a witness $\wit'=(\note',\pak'=(\ak',\nsk'),\alpha',\path',\pos')$.
+\item Let $\nk\defeq \nsk\cdot \g, \nk'\defeq \nsk'\cdot \g$.  We have \[\NF(\nk,\cm,\pos) = \NF(\nk',\cm',\pos')=\nf\]
+If $\nk\neq\nk',\cm\neq\cm'$ or $\pos\neq \pos'$ \advprime outputs $(\nk,\cm,\pos), (\nk',\cm',\pos')$ as a collision of \NF.
+\item Otherwise, we have $\notecom(\note)=\notecom(\note')=\cm$.
+If $\note \neq \note'$, \advprime outputs $\note,\note'$ as a collision of \notecom.
+
+\item Otherwise we have $\note=\note'=(\gd,\pk,\val,\rcm)$.
+Defining
+$\ivk\defeq \IVK(\ak,\nk), \ivk'\defeq \IVK(\ak',\nk)$,
+we have $\pk= \ivk\cdot \gd = \ivk'\cdot \gd$. 
+Thus, $\ivk=\ivk'$.
+(Important here that \ivk representation is unique and it is cause dfn of $\IVK$ has $mod\;\; 2^{\ell_{\ivk}=251}$.)
+If $\ak\neq \ak'$, \advprime outputs $(\ak,\nk),(\ak,\nk')$ as a collision of \IVK.
+
+\item Otherwise, we have $\ak=\ak'$.
+ Now, \adv knows $\alpha^*$ such that $\rk' = \ak^* + \alpha^*\cdot \g$, where $\ak^*$ is from the forgery challenger (as he used $(\alpha^*,\sighash(\rawtx'))$ in the \signallinputs query for \tx' for input \inp').
+And also $\rk' = \ak' + \alpha'\cdot \g$.
+So $\ak=\ak'= \ak^* + (\alpha^*-\alpha')\cdot\g$.
+And $\rk = \ak^* +(\alpha^*-\alpha'+\alpha)\cdot \g$.
+Thus, in this case \advprime outputs $(\alpha^*-\alpha'+\alpha, \sigma, \sighash(\rawtx))$ as a signature forgery.
+ 
+\end{enumerate}
+
+\end{proof}
+\newcommand{\tree}{\ensuremath{\mathsf{T}}\xspace}
+\newcommand{\curnotes}{\ensuremath{\mathsf{N}}\xspace}
+
+\newcommand{\maketransaction}{\ensuremath{\mathsf{maketransaction}}\xspace}
+\subsection{Modelling the outside adversary}
+
+\underline{$\maketransaction(\inputs,\outputs,\vbal,\ask)$}:
+\begin{enumerate}
+ \item For $i\in [\ell]$, check where $\input_i$ appears in the compute $\input_i\defeq \makeinput({{\inp}}_i)$.
+\item Check that $\sum_{i=1}^\ell \val_i - \sum_{j=1}^s \outval_j=\vbal$.
+If this is the case then $(\inputs,\outputs,\vbal)$ is a \emph{valid input} to \maketransaction.
+Otherwise output \rej and abort.
+ \item For $j\in [s]$, compute $\output_j \defeq \makeoutput({\out_j})$.
+ \item Choose uniform $\rcvs\in \F^s$ and output $\signallinputs(\maketx{(\inputs,\outputs,\vbal,\rcvs)},\ask)$
+ 
+\end{enumerate}
+
+\oracle begins by choosing a uniform spending key $(\ask,\nsk)\in\keyset$.
+And generates the corresponding keys $\ak\defeq \ask\cdot \g ,\nk\defeq \nsk\cdot\g, \ivk \defeq\IVK(\ak,\nk)$. 
+\adv and \oracle initialize an empty set $T$ of diversifed addresses.
+% \adv and \oracle initialize an empty merkle tree \tree
+ \adv and \oracle initialize an empty set of current notes \curnotes. 
+\adv can make two kinds of queries.
+
+\newcommand{\GH}{\ensuremath{\mathrm{GH}}\xspace}
+\paragraph{Get new diversifed address queries}
+\begin{itemize}
+\item\oracle chooses $\gd\in \G$ according to the distribution \GH of the group hash output.
+\item\oracle then outputs the diversifed address $(\gd,\pk \defeq \ivk\cdot \gd)$.
+\item \adv and \oracle add $(\gd,\pk)$ to the set of diversifed addresses $T$.
+\end{itemize}
+\paragraph{Make transaction queries}
+\begin{itemize}
+\item \adv chooses extended input notes $\input_1,\ldots,\input_\ell\in\curnotes$.
+\item \adv chooses output notes $\output_1,\ldots,\output_s$, with $\output_j = (\gd_j,\pk_j,\val_j,\rcm_j)$, for $(\gd_j,\pk_j)\in T$.
+\item \adv Chooses uniform $\rcvs\in \F^{s+\ell}$.
+\item \adv sends $(\inputs,\outputs,\rcvs)$ to \oracle.
+% \item \oracle computes $\inputs$ with $\inp_j\defeq \makeinput(\input_j)$, and $(\note_j,\out_j)= \makeoutputandnote(\output_j)$.
+\item \oracle returns $\tx\defeq \maketx(\inputs,\outputs,\rcvs,\ask,\pak)$ to \adv.
+\item \adv and \oracle add $\output_j$ to \curnotes for each $j$ s.t. $(\gd_j,\pk_j)\in T$.
+\item \adv and \oracle remove the elements of \inputs from \curnotes.
+\end{itemize}
+
+
+ 
+\subsection{Non-malleability w.r.t outside adversary}
+\begin{claim}\label{clm:nmal-sapling-outside}
+ Suppose \adv interacts with \oracle as described above.
+ Then it outputs a transaction $(\ledger,\tx,\inp\in\tx)$.
+ The probability that there exists $\tx'\in T,\inp'\in \inputs(\tx')$ such that 
+ \begin{enumerate}
+  \item $\rawof{\tx}\neq \rawof{\tx'},\forall \tx'\in T$.
+  \item $\nf(\inp)=\nf(\inp')$.
+ \end{enumerate}
+is \negl.
+\end{claim}
+\begin{proof}
+Reduce to Claim \ref{clm:nmal-sapling}.
+We
+\end{proof}
+\subsection{Indistinguishability w.r.t outside adversaries}
+\begin{claim}\label{clm:indist-sapling}
+Fix any efficient \adv.
+Suppose that \adv interacts with \oracle as described above.
+Then \adv outputs $\ell,s,\inputs,\outputs,\inputs',\outputs', |\inputs|=|\inputs'|=\ell,|\outputs|=|\outputs'|=s$.
+$\input_j\in \curnotes$
+$\output_j$ being a note plaintext $\output_j\defeq (\gd_j,\pk_j,\val_j)$
+such that $\vbal = \vbal'$.
+Let $M_1\defeq \makerandomizedtx(\inputs,\outputs),M_2\defeq \makerandomizedtx(\inputs',\outputs')$.
+% \oracle sends $M_1 \defeq \maketransaction(I_1), M_2\defeq \maketransaction(I_2)$
+Then the probability that \adv can distinguish between $M_1$ and $M_2$ is \negl.
+
+\end{claim}
+\begin{proof}
+ We consider the elements of $M_1$ and $M_2$ 
+ Given the inputs $I_1,I_2$ of \adv.
+ We claim first that $\inp_1,\ldots,\inp_\ell \in M_1,\inp'_1,\ldots,\inp'_\ell\in M_2$ are all independent from each other.
+ 
+ Such an element $\inp=(\nf,\rt,\rk,\cv,\prf)$
+ \begin{itemize}
+  \item 
+ $\nf = \NF(\nk,\cm,\pos)$ (if all from same address then given \cm, \pos 
+ \nk is common randomness, if NF random oracle then \nf s are uniform and independet.
+ \item \rt: Assume same in all inputs?
+ \item \rk: uniform and independent for each \inp, assuming $\alpha$ is uniform
+ \item  \cv: uniform and independent for each \inp, assuming $\rcv$ is uniform.
+ \item \prf: Given same fixing of previous elements same distribution
+ \end{itemize}
+
+ An output element $\out=(\cv,\epk,\prf,\noteenc)$
+ \begin{itemize}
+  \item $\cv=\val\cdot \gv + \rcv\cdot \gr$: unif and independent given that \rcv is
+  \item $\cm = \notecom(\gd,\pk,\val,\rcm)$: unif and independent given that \rcm is.
+  \item $\epk=\esk\cdot \gd $ uniform and independent given that \esk is.
+  \item from ZK property the same as \dist of \prf can be simulated given previous vals.
+ \item $\noteenc = \symencrypt{\esk\cdot\pk}{(\gd,\pk,\val)}$: Wanna say dist of \noteenc given fixed prev values is indist from
+ encryption under random key $K$. Suppose can distinguish between random key $K$ and $\esk\cdot\pk$, given $\gd,\epk=\esk\cdot\gd,\pk$. Same as solving DDH with $\gd = g, \esk\cdot \gd = a\cdot g,\pk =b\cdot g$. But if can distinguish between this encryption and one with a random $K$ can build DDH adversary that gets challenge $(g,a\cdot g,b\cdot g, K)$, plays role of \oracle with \adv and returns $(g,b\cdot g)$
+ as one of addresses $(\gd,\pk)$, uses $a$ as \esk ...to complete - easier when talking about simulator of $M$ rather than distinguishing between $M_1$ and $M_2$ cause then simulator encodes with random key $K$, and distinguisher against simulator can be used to break DDH.
+ 
+%   \item $\esk
+  \end{itemize}
+the signature \sigval: can be simulating by a signing oracle except w.p. \negl (get's ruined if \RO was already queried on point)
+the signatures \sigs: same.
+\end{proof}
+\newcommand{\inpwitness}{\ensuremath{\mathsf{inpwit}}\xspace}
+\newcommand{\inpnote}{\ensuremath{\mathsf{inpnote}}\xspace}
+\newcommand{\extnote}{\ensuremath{\mathsf{extnote}}\xspace}
+\newcommand{\inpnotes}{\ensuremath{{\mathcal{I}}}\xspace}
+\newcommand{\outnotes}{\ensuremath{{\mathcal{O}}}\xspace}
+\newcommand{\outwitness}{\ensuremath{\mathsf{inpwit}}\xspace}
+\newcommand{\outnote}{\ensuremath{\mathsf{outnote}}\xspace}
+\newcommand{\treehash}{\ensuremath{\mathsf{treehash}}\xspace}
+\subsection{Balance}
+The following claim states an adversary should not be able to create ``money out of thin air'';
+or more specifically, extract more money from the shielded pool than was put in it.
+In Sapling, the value $\vbal=\vbal(\tx)$ in a transaction \tx corresponds to the alleged difference of spend and output values (see Section 4.12 in the spec) and \tx is thought of as having  ;
+thus over-extracting from the pool corresponds to a constructing a ledger where the sum of all \vbal values is strictly positive.
+\begin{claim}\label{clm:balance-sapling}
+ The probability that efficient \adv generates ledger $\ledger=(\tx_1,\ldots,\tx_n)$ such that
+ \[\sum_{\tx\in \ledger} \vbal(\tx) >0 \]
+ is \negl.
+\end{claim}
+
+ \begin{proof}
+ Given such a ledger \ledger, we can apply an extractor for the SNARK proofs in all inputs and ouputs in all transactions.
+ For each transaction input $\inp\in \tx\in \ledger$, $\inp=(\cv,\nf,\rt,\rk,\pi)$, the extractor except w.p. \negl 
+ outputs an input witness $\inpwitness = (\input=(\note,\path,\pos),\pak,\rcv,\alpha))$.
+ We denote by $\extnote$ the \emph{extended note} corresponding to \inp, $\extnote \defeq (\note,\pos)$.
+ Similarly for every transaction output in some \tx in \ledger, $\out = (\cv,\cm,\epk,\pi,\noteenc)$,
+ the extractor outputs $\outwitness= (\note,\esk,\rcv)$. The value \pos for the output note can be deduced from when it was added to \ledger.
+ So again we can define for each \out, the corresponding extended note $\extnote = (\note,\pos)$.
+For $i\in [n]$ let us denote respectively by $\inpnotes_i,\outnotes_i$ the extended input and output notes in $\tx_i$.
+
+
+Let us denote by $\bal(\tx)$ the sum of note values in extendend input notes minus the sum of values in extended output notes.
+And by $\rand(\tx)$ the sum of values $\rcv$ in inputs notes minus the same of values \rcv in output notes.
+
+We will show two things hold e.w.p. \negl:
+\begin{enumerate}
+
+\item For each $i\in [n], \inpnotes_i \subset \outnotes_1\cup\ldots\cup\outnotes_{i-1}\setminus(\inpnotes_1\cup\ldots\cup\inpnotes_{i-1})$.
+
+This implies $\sum_{\tx\in\ledger} \bal(\tx) \leq 0$
+
+\item  For each $\tx\in \ledger$,
+\[\bal(\tx) = \vbal(\tx)\]
+\end{enumerate}
+
+When both of these happen together then 
+\[\sum_{\tx\in \ledger} \vbal(\tx) = \sum_{\tx\in\ledger} \bal(\tx) \leq 0\]
+
+
+We construct \adv', such that when one of the above doesn't hold, \adv' produces either 
+produces a collision of \IVK,\notecom,\treehash or \valcom.
+
+\begin{enumerate}
+\item  \adv' first checks if  for some $i\in [n]$ and $\inp\in \tx_i, \extnote(\inp)\notin \outnotes_{<i}$.
+
+If so, let $\tx=\tx_i$. Let \rt be the root of the tree used in the public input of \inp; this is the tree $T_j$ formed from $\set{\tx_1,\ldots,\tx_j}$ for some $j<i$.
+Let $\extnote=(\gd,\pk,\val,\rcm,\pos)$ and $\cm=\notecom(\gd,\pk,\val,\rcm)$.
+\inpwitness contains a path $\path$ from \cm to \rt.
+If \pos is an index of a leaf in $T_j$, there exists an extended note $\extnote'$ that was inserted to this position when constructing the ledger
+and from \extnote' we can derive a path \path' from $\cm' = \notecom(\gd',\pk',\val',\rcm')$ in position \pos to \rt.
+If $\path\neq\path'$, then going down from \rt to the first difference between \path and \path'
+(ask Sean/Daira : is $T$ always a full tree with zeroes on other leaves? No you have filler values for the empty subtrees, need to check this are values that are hard to find route to - their impossible to find rout to - have no preimage)
+%Assuming \path' always exists (the zero-padding option)
+this difference gives a collision of \treehash that \adv' can output.
+
+
+Otherwise, we have $\cm=\cm'$.
+\note must be different from \note' because $\extnote' = (\note',\pos)\in \outnotes_{<i}$ but $(\note,\pos)\notin \outnotes_{<i}$.
+
+Thus $\note,\note'$ is a collision of \notecom that \adv' can output.
+
+Now suppose \pos is not a position of a leaf in $T_j$. This means there is only a partial path \path' in $T_j$ from \rt to a filler value with no preimage (see spec for details).
+So, similarly we follow \path and \path' to their first difference - a difference that must exist becaues of the filler value; and this gives us a collision of \treehash.
+
+
+
+
+
+\item Now \adv' checks if as a multiset $\inpnotes \defeq \inpnotes_1\cup\ldots\cup\inpnotes_n$ contains a repetition.
+That is, there exists $\extnote= (\gd,\pk,\val,\rcm,\pos)$ such that for two distinct transaction inputs $\inp = (\cv,\nf,\rt,\rk,\pi), \inp'=(\cv',\nf',\rt',\rk',\pi')$ in \ledger;
+if the corresponding extracted witnesses are $\inpwitness = (\input=(\note,\path,\pos),\pak,\rcv,\alpha)$,
+$\inpwitness' = (\input'=(\note',\path',\pos'),\pak',\rcv',\alpha')$; then $(\note,\pos) = (\note',\pos') = \extnote$.
+
+
+We show in this case that \adv' can output a collision of \IVK:
+
+
+Let $\cm=\notecom(\gd,\pk,\val,\rcm)$.
+Since $\nf\neq \nf'$,
+and 
+$\nf = \NF(\nk,\cm,\pos),\nf'= \NF(\nk',\cm,\pos)$;
+we have  $\nk \neq\nk'$.
+
+Also $\ivk = \IVK(\ak,\nk), \ivk'=\IVK(\ak',\nk')$,
+and $\pk=\ivk\cdot \gd = \ivk'\cdot \gd$.
+So $\ivk=\ivk'$ (Check with Sean is ivk canonical - checked)
+And thus, \adv' can output $(\ak,\nk),(\ak',\nk')$ as a collision of \IVK.
+
+
+\item At this point, we know that $\bal(\tx) \neq \vbal(\tx)$.
+Suppose we are in this case with probability $\gamma$. We show how to find a collision of \valcom with probability
+$\gamma/\poly$. Since \tx verifies, we know that
+$\versig^{\RO}_{\gr}(S,\sighash(\rawtx),\sigval)$ for 
+\[S=\sum_{i=1}^\ell \cv_i - \sum_{i=\ell+1}^{\ell+s}\cv_i-\vbal\cdot \gv= \sum \val_i\cdot \gv + \sum\rcv_i \cdot \gr  - \vbal\cdot \gv.\]
+From \cite{schnorrSecurity}, with probability $\gamma/\poly$ we can find $s$ such that $s\cdot \gr = S$
+Thus we have $\valcom(0,s) = S$.
+Let $R=\sum_{i=1}^{\ell+s} \rcv_i$  and $v\defeq \bal(\tx)-\vbal(\tx)$.
+We also have $\valcom(v,R) = S$.
+Hence $\adv'$ can output $(0,s), (v,R)$ as a collision of \valcom.
+
+\end{enumerate}
+
+ \end{proof}
+ 
+\subsection{Spendability}
+
+\newcommand{\dec}{\ensuremath{\mathsf{decode}}\xspace}
+\newcommand{\np}{\ensuremath{\mathsf{np}}\xspace}
+\newcommand{\secret}{\ensuremath{\mathsf{shared\mhyphen secret}}\xspace}
+
+\paragraph{Valid transaction inputs:}
+A sequence $\txinput = (\inputs,\outputs,\vbal)$ is
+balanced if $\vbal =  \sum \val_i - \sum \outval_j$.
+
+We review note encryption and decryption from the spec in our notation.
+
+% \paragraph{Encrypting notes:}
+% Given $\note=(\gd,\pk,\val,\rcm)$ and outgoing viewing key \ovk.
+% \begin{enumerate}
+%  \item Choose random $\esk\in \F$ and let $\epk\def \esk\cdot g$.
+%  \item Let $\secret \defeq \esk\cdot \pk$.
+%  \item Let $\notenc = \symencrypt{\secret}{\note}$
+% \end{enumerate}
+
+
+
+\paragraph{Decrypting notes:}
+$\dec(\ivk,\out=(\cv,\cm,\epk,\prf,\noteenc)):$
+\begin{enumerate}
+\item Let $K\defeq \epk\cdot \ivk$
+ \item Suppose $\np=(\gd,\val,\rcm,\mathsf{memo})$. 
+ \item Let $\np=\symdecrypt{K}{\noteenc}$. If \symdecrypt{}{} fails output \rej.
+ \item Let $\pk\defeq \gd\cdot \pk$. Let $\note\defeq (\gd,\pk,\val,\rcm)$.
+ \item Check that $\cm=\notecom(\note)$. Output \rej if not.
+ \item Output \note.
+\end{enumerate}
+We define 
+%\[\dec(\ivks,\tx)\defeq \cup_{\sk\in\sks,\inp\in\inps}(\dec(\sk,\tx))\]
+\[\dec(\ivk,\ledger) \defeq \cup_{\tx\in\ledger} \dec(\ivk,\tx))\]
+Define
+\[\nfof{\tx} \defeq \cup_{\inp\in\inps(\tx)}\nfof{\inp},\nfof{\ledger}\defeq\cup_{\tx\in\ledger}\nfof{\tx}\]
+%We consider an adversary \adv that has access to \signallinputs queries of \oracle, identically to the non-malleability section.
+ \adv receives a challenge $\pak = (\ak,\nsk)$ where $\nsk\in \F,\ak\in \G$ were chosen uniformly.
+ Let $\ivk\defeq \IVK(\pak)$.
+In the spendability game \adv tries to create a ledger where a note succesfully decrypted with \ivk cannot be spent.
+Inspection of the protocol shows this exactly corresponds to the nullifer of \note with nullifer key \nk already appearing in the ledger.
+\begin{claim}\label{sapling-spendability}
+ Fix any efficient \adv.
+ Suppose that \adv  is given uniformly chosen \pak, and let $\ivk \defeq \IVK(\pak)$.
+The probability that \adv generates a ledger \ledger and note \note such that for some value \pos
+ \begin{enumerate}
+  \item $(\note,\pos)\in \dec(\ivk,\ledger)$
+  \item $\NF(\nk,\notecom(\note),\pos)\in \nfof{\ledger}$ 
+ \end{enumerate}
+ is \negl.
+\end{claim}
+\begin{proof}
+Let $\gamma$ be the probability that \adv outputs $\ledger,\note$ satisfying the two properties in the claim.
+We construct an efficient \advprime that receives a forgery challenge \ak of \schnorr and w.p. $\gamma-\negl$ does one of the following.
+\begin{enumerate}
+\item Outputs a collision of \NF.
+ \item Outputs a collision of \notecom.
+ \item Outputs a collision of \IVK.
+ \item Outputs a forgery w.r.t to randomization of \schnorr for the challenge \ak.
+\end{enumerate}
+
+
+
+signature forger \advprime against randomized \schnorr in a similar way to Claim \ref{clm:nmal-sapling}
+that succeeds w.p. $\gamma-\negl$.
+ \begin{enumerate}
+  \item  \advprime receives a challenge \ak; chooses random $\nsk\in \F$ and sends $\pak=(\ak,\nsk)$ to \adv.
+\item \advprime receives the output \ledger,\note of \adv.
+\item \advprime checks that $\ledger,\note$ satisfy the two properties in the claim; if not it aborts.
+\item  Let $\nf \defeq \NF(\nk,\notecom(\note),\pos)$
+Fix the $\out,\tx$ with $\out\in\tx\in \ledger$ such that $\dec(\ivk,\out) = (\note,\pos)$.
+\out contains a valid SNARK proof for \spendstatement{\rt,\cv,\nf,\rk} for some $\cv,\rt$.
+Apply the relevant extractor \ext relating to the snark proof \adv to
+obtain e.w.p \negl a witness $\path,\pos,\gd',\pk',\val',\rcm',\cm',\rcv',\alpha,\ak',\nsk'$ for the statement.
+\item Let $\nk' \defeq \nsk'\cdot \gd$. If $(\nk,\cm,\pos)\neq (\nk',\cm',\pos')$, \advprime outputs $(\nk,\cm,\pos),(\nk',\cm',\pos')$ as a collision of \NF.
+\item Otherwise, let $\note' = (\gd',\pk',\val',\rcm')$. We have $\cm=\notecom(\note)=\notecom(\note')$. If $(\gd',\pk',\val')\neq (\gd,\pk,\val)$, \advprime outputs $(\note,\note')$ as a collision of \notecom.
+\item Otherwise, we must have $\ivk'=\ivk$ (cause $\gd\cdot \ivk = \gd \cdot \ivk' = \pk$). Then $\ivk = \IVK(\ak',\nk)$ (by this stage we know $\nk=\nk'$).
+If $\ak\neq \ak'$, \advprime outputs $(\ak,\nk),  (\ak',\nk)$ as a collision of \IVK.
+\item Otherwise $\ak=\ak'$, and $\rk = \ak + \alpha \cdot \g$. Let $\sigma$ be the signature of \rawtx with public key \rk in \inp.
+and \advprime outputs $(\alpha, \rawtx, \sig)$ as a forgery of \schnorr with challenge \ak.
+ \end{enumerate}
+
+ 
+ 
+\end{proof}
+
+
+
+
+
+
+
+
+% 
+% ----------SECOND  ATEMPT-------------------
+% 
+% \adv interacts with \oracle by maketx queries and createaddr queries,
+% can also insert txs to ledger.
+% Keeps track of inputs not used yet.
+% 
+% 
+% Del Spender in spendability game:
+% List of unspent notes.
+% Makes $\signallinputs(\tx)$ queries.
+% These make $\nf(\tx)$ crossed off - actually what crossed off? Have \inp, not \input.
+% Can add to ledger \ledger any valid \tx.
+% $\decode_{\sk}(\tx)$ added to \curnotes.
+% 
+% 
+% 
+% % \subsection{Uniqueness}
+% How to define?
+% 
+% 1 - Interact with honest player, either inserting tx to ledger, or 
+% give them inputs and outputs, with inputs in their create address output.
+% % honest decodes at the end of each transaction, 
+% 
+% output ledger, legal transaction input \txinput where \inputs
+% are coins of honest player  that haven't been used.
+% Such that \createtx{\ledger}{\txinput}
+% fails (with some probability? with noticeable prob?)
+% 
+% is \negl.
+
+\begin{proof}
+ Suppose that \ledger,\txinput=(\inputs,\outputs) such as this was output
+ If \inputs are in \curnotes, the only reason it could fail is for some $\input\in\inputs$
+ $\nf(\input) \in \nf(\ledger)$.
+ $\input=(\gd,\pk,\val,\rcm)$ is the result of a succesful decoding.
+ This means $\pk = \gd\cdot \ivk$.
+ So $\nf(\input)$ is well defined and $\nf(\input) = \NF(\nk,\notecom(\input),\pos)$.
+ Let $\inp$ be the input in some $\tx\in \ledger$ that has $\nf(\inp)=\nf(\input)$.
+ We can look at two options.
+ First, \inp appears in \tx inserted by \adv.
+ In this case should be able to break PR of \NF - assuming model where \nsk uniform and \adv only seen div addrs:
+ Unless \nsk was retrieved.
+ 
+ \adv has seen \input, but if not \nk then can predict output of \NF with uniformly chosen
+ 
+ what is dfn of PR?
+ Distnguish between PR and \RO  after adaptive queries.
+%  We can extract (thinking of \adv and \oracle as one party) $\inpwitness=(\note'= (\gd',\pk',\val',\rcm'),\ak,\alpha,\nsk,\path)$
+PR attacker -  run \adv answering calls to \NF using $R$. If 
+\adv sees \pk,\gd. Given that is \nk uniform?
+Or maybe PR of either \NF or \IVK.
+Of just \NF if we look at his queries,
+if there's a query with $(\nk,\cm,\pos)$ there we can - do what? to invert \IVK we need both \nk and \ak - 
+and if there's a query to \nk he can get the serial number.
+Say he know \nk (you want someone with the viewing key to not attack you).
+In that case he definitely knows \nk,and \cm,\pos.
+So he knows \nf!
+Now question if he can maul proof to get that PI.
+Seems simple solution is to show snark with sig together is sim extractable.
+Maybe point is signature again - you put \adv together with \oracle and
+extract his witness. It's the same \ak, so can sign a different message.
+Need to notice that the \inp \adv will generate we don't know decomposition of \rk into \ak of signautre challenge 
+necessarily - we knew it always in NM cause in getting to relevant case \rk was equal to one of the \rk s  from signalltransaction queries.
+Maybe can say something like this:
+When putting \adv together with \oracle and extracting from \adv 's \inp if we get some other \ak',
+  we then run \oracle (that has \ask or not? If has \ask that can't talk about sig forgery, if doesn't then just simulates signautre?
+  Ohh but then makes proof with \ak, ohh \adv already knows \ak so if witness gives \ak' get collision of \NF - ohh wait \ak is not an input of \NF.
+  But if witness has different \ak can get collision of \IVK or \cm.
+  If gives \ak need to prove using forgery. Seems fine - msg signed different from simulated ones cause \nf different).
+
+We showed in NM that if he sees one tx with this \nf he cannot make another.
+Here dfntly knows \nf, potentially can maul.
+So have to put him together with \oracle to extract witness.
+Now question is if can make signature forgery.
+Can have \sim answer signature queries, seems if \tx is accepting he created a new signature with key \ak and some randomization $\alpha$.
+But does message have to be new? When exactly does \sim answer? I guess when tx's are made by \oracle and are
+\maketransaction queries. Otherwise, can answer according to real \RO.
+But what if \adv asks exactly same message for \maketransaction query? Can he?
+It would mean that \rawtx is the same in both signatures. Question if he controls \rawtx as a string. He dfnly does not make the proofs
+And \rk is random.
+Actually doesn't him inserting..suppose he did, construct \adv against NM? \adv needs given seeing txs signed construct one with the same \nf.
+Need to look at case where reason of failure of validity is only \nf repetition. (Perhaps this is only reason possible when using \createtx{}{})
+\oracle' can be simulated by \oracle that 
+and 
+Maybe have gen sim extractability here - suppose someone made a proof after seeing proofs
+look at him together with \sim of signer.
+\tx that failed is one where \nf is same. \tx can be generated by NM oracle? at least same distribution as \createtx{}{}
+
+Again NM adversary would work like this
+Given FG \adv when \adv has query (\inpnotes,\outnotes) you know \pak so can simulate answer to that query,
+just given access to signing oracle.
+Finally \adv outputs query $(\inpnotes,\outnotes)$ s.t \createtx{}{} will fail --> \nf appears already.
+And we're assuming w.h.p it appeared in a \tx inserted by \adv', so 
+
+Outside adv:
+  Inpnotes, outnotes -->  tx+sig
+Del Spender
+  Use same Inpnotes, outnotes (have ak,nsk) -> tx --> sig
+  So del spender + sign oracle can simulate oracle for ouside adv.
+  In the end del spender makes oracle output diff tx with same nf.
+  So only possibility that doesn't contradict NM, in case delegated spen made second/duplitcate tx,
+  is if it's exactly the same..is that an attack? 
+  
+  Someone produced same tx as me, but sooner.
+  But that happens with \negl probability cause \tx has uniform elements like \rk.
+ 
+But sees with RO probability of that should be \negl.
+
+
+Second, duplicate \nf appears in \tx from \createtx{}{} query.
+
+Again, look at \adv and \oracle as one party to extract witnesses from snark proofs of both txs where \nf appeared
+(Here again implicit assumption that second tx only failed because of \nf and proof is valid, seems only case when using \createtx{}{}
+with coins from tree).
+Can assume for both notes $(\nk,\cm,\pos)$ are same in decoding and witness,  otherwise get a collision of \NF.
+ In decodings, values of \pos are distinct - i.e. $\pos\neq \pos'$
+ So $\nf = \nf'$ implies CR of \NF.
+ 
+ 
+ \begin{itemize}
+  \item $\nk'\neq \nk$ or $\cm'\neq \cm$ or $\pos\neq \pos'$ - then we get a collision of \NF.
+  \item $\cm'=\cm$: (We aren't including \pos in \note below, and know it's different at this point)
+  \begin{itemize}
+   \item  $\note\neq \note'$: collision of \notecom.
+   \item $\note =\note'$. So it's exactly same note - there 
+   Other option  - \adv mannaged to use exactly same note. If now \adv and \oracle same party that's possible. So need to address
+   this case with party only \adv - but then can't use extractor.
+   Seems need to address case that \nf appeared in \adv insertion as breaking PR of \NF.
+ Or use s
+ \end{itemize}
+
+ \end{itemize}
+
+ 
+ (r,a*r),(r2,a*r2),..,
+ (s,b*s),(s2,b*s2),..,
+ 
+ (r7,a*r7) or (s7,b*s7)
+ reduce to DDH:
+ given (g,ag,bg)  abg or rg
+ 
+ we have (g,abg)
+         (g,rg)
+         
+    (ag,abg) or (bg,rg)
+ 
+ Even one addr version not same as DDH
+ Given (g,ag)  
+   (bg,abg)  or (bg,a'bg)
+   Ahh actually this is DDH.
+ Can gen rand a
+\end{proof}
+
+% \section{Privacy of diversifed addresses}
+% We want to show that even after seeing several diversifed addresses based on several base addresses, \adv cannot guess what base address 
+% a new diversifed address is from.\footnote{The proof of the following Claim is based on a note of Mary Maller}
+% 
+% Formally, denote by \ddhadv the advantage of \adv in the group \G.
+% 
+% Define the following 
+% 
+% \begin{claim}\label{clm:divaddresses}
+%  Suppose that t
+% \end{claim}
+
+
+\subsection{Indistinguishability of diversifed addresses}
+
+
+El-gammal encryption
+private key \sk
+public key $[\sk]\cdot \g$
+encryption of $x$: [\sk]
+\bibliography{refs}
+\bibliographystyle{plain}
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

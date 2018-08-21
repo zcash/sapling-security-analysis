@@ -17,7 +17,7 @@
 %\usepackage{numdef}
 %\usepackage{enumitem}
 \usepackage{amsopn}
-\usepackage{url,hyperref}
+\usepackage{url,hyperref}  
 \providecommand{\sqbinom}{\genfrac{\lbrack}{\rbrack}{0pt}{}}
 \DeclareMathOperator{\spn}{span}
 
@@ -634,6 +634,7 @@ This is exactly what we had to prove.
 \newcommand{\alphas}{\ensuremath{\overrightarrow{\mathsf{\alpha}}}\xspace}
 \newcommand{\aks}{\ensuremath{\overrightarrow{\mathsf{ak}}}\xspace}
 \newcommand{\asks}{\ensuremath{\overrightarrow{\mathsf{ask}}}\xspace}
+\newcommand{\ivks}{\ensuremath{\overrightarrow{\mathsf{ivk}}}\xspace}
 \newcommand{\sks}{\ensuremath{\overrightarrow{\mathsf{sk}}}\xspace}
 \newcommand{\outputs}{\ensuremath{\overrightarrow{\mathsf{output}}}\xspace}
 \newcommand{\rcm}{\ensuremath{\mathsf{rcm}}\xspace}
@@ -647,6 +648,7 @@ This is exactly what we had to prove.
 \newcommand{\symdecrypt}[2]{\ensuremath{\mathbf{DEC}_{#1}(#2)}\xspace}
 \newcommand{\sighash}{\ensuremath{\mathbf{sighash}}\xspace}
 \newcommand{\outverify}{\ensuremath{\mathbf{outverify}}\xspace}
+\newcommand{\MAXVAL}{\ensuremath{\mathsf{MAX}}\xspace}
 
 \section{Description of Sapling}
  \subsection{Basic components}
@@ -687,6 +689,18 @@ I know $\path,\pos,\note=(\gd,\pk,\val,\rcm),\cm,\rcv,\alpha,\ak,\nsk$ such that
 \end{enumerate}
 
 \subsection*{Components}
+A \emph{note} is a tupple $\note = (\gd,\pk,\val,\rcm)$ where 
+\begin{enumerate}
+ \item $\gd,\pk \in \G$.
+ \item $\val, \rcm \in \F$
+ \item $\val \leq \MAXVAL$.
+\end{enumerate}
+
+For $\ivk \in \F$ we say \note \emph{belongs to \ivk} if $\pk =\ivk \cdot \g$.\\
+
+
+
+
 An \emph{input base}, usually denoted \input, will consist of the values required to make an input in a Sapling transaction, except the spending and proving key; namely $\input = (\note,\path,\pos)$ where
 \begin{itemize}
  \item \note is a note
@@ -761,13 +775,15 @@ where $\pak=(\ak,\nsk)
 \noindent
 \underline{\signtx{\pretx=(\rawtx,\sigval),\asks,\alphas}}
 \begin{enumerate}
- \item For each $i\in [\ell]$, let $\sigma_i\defeq \sign(\ask_i+\alpha_i,\sighash(\rawtx))$
+ \item For each $i\in [\ell]$, let $\sigma_i\defeq \sign_{\gsig}(\ask_i+\alpha_i,\sighash(\rawtx))$
  \item Let $\sigs\defeq (\sig_1,\ldots,\sig_\ell)$.
  \item Output $(\rawtx,\sigs)$.
 \end{enumerate}
 
 \noindent
-\underline{\makerandomizedtx(\rawtx=(\inputs,\outputs,\vbal)}
+\underline{\makerandomizedtx(\inputs,\outputs,\vbal)}
+
+\noindent
 where $\input_j = (\note_j,\pak_j,\path_j,\pos_j), \output_j =(\gd_j,\pk_j,\val_j)$
 \begin{enumerate}
  \item Choose random $\rcms, \alphas \leftarrow \F^{\ell},\rcvs\in \F^s$.
@@ -791,16 +807,19 @@ where $\input_j = (\val_j,\note_j,\pak_j,\path_j,\pos_j), \output_j =(\gd_j,\pk_
 \end{enumerate}
 
 \noindent
-\underline{\verifytx(\rawtx,\sigs)},
+\underline{\verifytx{\ledger}{\tx}}
+
 \begin{enumerate}
- \item For each $\inp_i =(\rt,\cv,\nf,\rk,\prf)\in \inps(\tx)$,
+\item Suppose that $\tx=(\rawtx,\sigs)$.
+\item For each $\inp_i =(\rt,\cv,\nf,\rk,\prf)\in \inps(\tx)$,
  \begin{itemize}
-  \item check that $\spendverify(\rt,\cv,\nf,\rk;\prf)$.
+  \item Check that $\nf \notin \nfof{\ledger}\cup \set{\nfof{\inp_1},\ldots,\nfof{\inp_{i-1}}}$.
+  \item Check that $\spendverify(\rt,\cv,\nf,\rk;\prf)$.
   \item Check that $\versig^{\RO}_{\gsig}(\rk,\sighash(\rawtx),\sig_i)$
  \end{itemize}
 \item For each $\out = (\cv,\cm,\epk,\prf,\noteenc)\in\outs(\tx)$, check that  $\outverify(\cv,\cm,\epk;\prf)$
-\item Let $S\defeq\sum_{i=1}^\ell \cv_i - \sum_{i=\ell+1}^{\ell+s}\cv_i-\vbal\cdot \gv$
-\item Check that .
+\item Let $S\defeq\sum_{i=1}^\ell \cv_i - \sum_{i=\ell+1}^{\ell+s}\cv_i-\vbal\cdot \gv$.
+\item Check that $\versig^{\RO}_{\gr}(S,\sighash(\rawtx),\sigval)$.
 \end{enumerate}
 
 
@@ -1184,7 +1203,7 @@ Hence $\adv'$ can output $(0,s), (v,R)$ as a collision of \valcom.
 
 \paragraph{Valid transaction inputs:}
 A sequence $\txinput = (\inputs,\outputs,\vbal)$ is
-balanced if $\vbal =  \sum \val_i - \sum \outval_j$.
+a \emph{valid transaction input} if $\vbal =  \sum \val_i - \sum \outval_j$.
 
 We review note encryption and decryption from the spec in our notation.
 
@@ -1214,9 +1233,25 @@ We define
 Define
 \[\nfof{\tx} \defeq \cup_{\inp\in\inps(\tx)}\nfof{\inp},\nfof{\ledger}\defeq\cup_{\tx\in\ledger}\nfof{\tx}\]
 %We consider an adversary \adv that has access to \signallinputs queries of \oracle, identically to the non-malleability section.
- \adv receives a challenge $\pak = (\ak,\nsk)$ where $\nsk\in \F,\ak\in \G$ were chosen uniformly.
- Let $\ivk\defeq \IVK(\pak)$.
+% \adv receives a challenge $\pak = (\ak,\nsk)$ where $\nsk\in \F,\ak\in \G$ were chosen uniformly.
+% Let $\ivk\defeq \IVK(\pak)$.
 In the spendability game \adv tries to create a ledger where a note succesfully decrypted with \ivk cannot be spent.
+Formally, the game proceeds as follows
+\begin{enumerate}
+ \item We choose uniform $\sk = (\ask,\nsk)$; and give $\pak=\pak(\sk)$ to \adv.
+\item Let $\ivk \defeq \IVK(\pak)$. \adv outputs a ledger \ledger, a note $\note$, a valid transaction input $(\inputs=(\note),\outputs,\vbal)$,
+a set of incoming viewing keys \ivks. 
+\item We choose random $\rcvs\in \F^{\ell+s}$ and compute $\tx = \maketx(\inputs,\outputs,\vbal,\ask)$.
+\item \adv wins iff 
+\begin{enumerate}
+\item $\note \in \dec(\ivk,\ledger)$.
+\item For each $i\in [s]$, $\output_i$ belongs to $\ivk_i$.
+ \item $\verifytx{\ledger}{\tx}$.
+ \item For some $i\in [\ell]$, $\dec(\out_i,\ivk_i)$ does not return $\output_i$.
+\end{enumerate}
+\end{enumerate}
+
+
 Inspection of the protocol shows this exactly corresponds to the nullifer of \note with nullifer key \nk already appearing in the ledger.
 \begin{claim}\label{sapling-spendability}
  Fix any efficient \adv.
@@ -1300,141 +1335,6 @@ and \advprime outputs $(\alpha, \rawtx, \sig)$ as a forgery of \schnorr with cha
 % fails (with some probability? with noticeable prob?)
 % 
 % is \negl.
-
-\begin{proof}
- Suppose that \ledger,\txinput=(\inputs,\outputs) such as this was output
- If \inputs are in \curnotes, the only reason it could fail is for some $\input\in\inputs$
- $\nf(\input) \in \nf(\ledger)$.
- $\input=(\gd,\pk,\val,\rcm)$ is the result of a succesful decoding.
- This means $\pk = \gd\cdot \ivk$.
- So $\nf(\input)$ is well defined and $\nf(\input) = \NF(\nk,\notecom(\input),\pos)$.
- Let $\inp$ be the input in some $\tx\in \ledger$ that has $\nf(\inp)=\nf(\input)$.
- We can look at two options.
- First, \inp appears in \tx inserted by \adv.
- In this case should be able to break PR of \NF - assuming model where \nsk uniform and \adv only seen div addrs:
- Unless \nsk was retrieved.
- 
- \adv has seen \input, but if not \nk then can predict output of \NF with uniformly chosen
- 
- what is dfn of PR?
- Distnguish between PR and \RO  after adaptive queries.
-%  We can extract (thinking of \adv and \oracle as one party) $\inpwitness=(\note'= (\gd',\pk',\val',\rcm'),\ak,\alpha,\nsk,\path)$
-PR attacker -  run \adv answering calls to \NF using $R$. If 
-\adv sees \pk,\gd. Given that is \nk uniform?
-Or maybe PR of either \NF or \IVK.
-Of just \NF if we look at his queries,
-if there's a query with $(\nk,\cm,\pos)$ there we can - do what? to invert \IVK we need both \nk and \ak - 
-and if there's a query to \nk he can get the serial number.
-Say he know \nk (you want someone with the viewing key to not attack you).
-In that case he definitely knows \nk,and \cm,\pos.
-So he knows \nf!
-Now question if he can maul proof to get that PI.
-Seems simple solution is to show snark with sig together is sim extractable.
-Maybe point is signature again - you put \adv together with \oracle and
-extract his witness. It's the same \ak, so can sign a different message.
-Need to notice that the \inp \adv will generate we don't know decomposition of \rk into \ak of signautre challenge 
-necessarily - we knew it always in NM cause in getting to relevant case \rk was equal to one of the \rk s  from signalltransaction queries.
-Maybe can say something like this:
-When putting \adv together with \oracle and extracting from \adv 's \inp if we get some other \ak',
-  we then run \oracle (that has \ask or not? If has \ask that can't talk about sig forgery, if doesn't then just simulates signautre?
-  Ohh but then makes proof with \ak, ohh \adv already knows \ak so if witness gives \ak' get collision of \NF - ohh wait \ak is not an input of \NF.
-  But if witness has different \ak can get collision of \IVK or \cm.
-  If gives \ak need to prove using forgery. Seems fine - msg signed different from simulated ones cause \nf different).
-
-We showed in NM that if he sees one tx with this \nf he cannot make another.
-Here dfntly knows \nf, potentially can maul.
-So have to put him together with \oracle to extract witness.
-Now question is if can make signature forgery.
-Can have \sim answer signature queries, seems if \tx is accepting he created a new signature with key \ak and some randomization $\alpha$.
-But does message have to be new? When exactly does \sim answer? I guess when tx's are made by \oracle and are
-\maketransaction queries. Otherwise, can answer according to real \RO.
-But what if \adv asks exactly same message for \maketransaction query? Can he?
-It would mean that \rawtx is the same in both signatures. Question if he controls \rawtx as a string. He dfnly does not make the proofs
-And \rk is random.
-Actually doesn't him inserting..suppose he did, construct \adv against NM? \adv needs given seeing txs signed construct one with the same \nf.
-Need to look at case where reason of failure of validity is only \nf repetition. (Perhaps this is only reason possible when using \createtx{}{})
-\oracle' can be simulated by \oracle that 
-and 
-Maybe have gen sim extractability here - suppose someone made a proof after seeing proofs
-look at him together with \sim of signer.
-\tx that failed is one where \nf is same. \tx can be generated by NM oracle? at least same distribution as \createtx{}{}
-
-Again NM adversary would work like this
-Given FG \adv when \adv has query (\inpnotes,\outnotes) you know \pak so can simulate answer to that query,
-just given access to signing oracle.
-Finally \adv outputs query $(\inpnotes,\outnotes)$ s.t \createtx{}{} will fail --> \nf appears already.
-And we're assuming w.h.p it appeared in a \tx inserted by \adv', so 
-
-Outside adv:
-  Inpnotes, outnotes -->  tx+sig
-Del Spender
-  Use same Inpnotes, outnotes (have ak,nsk) -> tx --> sig
-  So del spender + sign oracle can simulate oracle for ouside adv.
-  In the end del spender makes oracle output diff tx with same nf.
-  So only possibility that doesn't contradict NM, in case delegated spen made second/duplitcate tx,
-  is if it's exactly the same..is that an attack? 
-  
-  Someone produced same tx as me, but sooner.
-  But that happens with \negl probability cause \tx has uniform elements like \rk.
- 
-But sees with RO probability of that should be \negl.
-
-
-Second, duplicate \nf appears in \tx from \createtx{}{} query.
-
-Again, look at \adv and \oracle as one party to extract witnesses from snark proofs of both txs where \nf appeared
-(Here again implicit assumption that second tx only failed because of \nf and proof is valid, seems only case when using \createtx{}{}
-with coins from tree).
-Can assume for both notes $(\nk,\cm,\pos)$ are same in decoding and witness,  otherwise get a collision of \NF.
- In decodings, values of \pos are distinct - i.e. $\pos\neq \pos'$
- So $\nf = \nf'$ implies CR of \NF.
- 
- 
- \begin{itemize}
-  \item $\nk'\neq \nk$ or $\cm'\neq \cm$ or $\pos\neq \pos'$ - then we get a collision of \NF.
-  \item $\cm'=\cm$: (We aren't including \pos in \note below, and know it's different at this point)
-  \begin{itemize}
-   \item  $\note\neq \note'$: collision of \notecom.
-   \item $\note =\note'$. So it's exactly same note - there 
-   Other option  - \adv mannaged to use exactly same note. If now \adv and \oracle same party that's possible. So need to address
-   this case with party only \adv - but then can't use extractor.
-   Seems need to address case that \nf appeared in \adv insertion as breaking PR of \NF.
- Or use s
- \end{itemize}
-
- \end{itemize}
-
- 
- (r,a*r),(r2,a*r2),..,
- (s,b*s),(s2,b*s2),..,
- 
- (r7,a*r7) or (s7,b*s7)
- reduce to DDH:
- given (g,ag,bg)  abg or rg
- 
- we have (g,abg)
-         (g,rg)
-         
-    (ag,abg) or (bg,rg)
- 
- Even one addr version not same as DDH
- Given (g,ag)  
-   (bg,abg)  or (bg,a'bg)
-   Ahh actually this is DDH.
- Can gen rand a
-\end{proof}
-
-% \section{Privacy of diversifed addresses}
-% We want to show that even after seeing several diversifed addresses based on several base addresses, \adv cannot guess what base address 
-% a new diversifed address is from.\footnote{The proof of the following Claim is based on a note of Mary Maller}
-% 
-% Formally, denote by \ddhadv the advantage of \adv in the group \G.
-% 
-% Define the following 
-% 
-% \begin{claim}\label{clm:divaddresses}
-%  Suppose that t
-% \end{claim}
 
 
 \subsection{Indistinguishability of diversifed addresses}

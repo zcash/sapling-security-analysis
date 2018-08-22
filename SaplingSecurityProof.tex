@@ -1201,9 +1201,9 @@ Hence $\adv'$ can output $(0,s), (v,R)$ as a collision of \valcom.
 \newcommand{\np}{\ensuremath{\mathsf{np}}\xspace}
 \newcommand{\secret}{\ensuremath{\mathsf{shared\mhyphen secret}}\xspace}
 
-\paragraph{Valid transaction inputs:}
+\paragraph{Valid transaction bases:}
 A sequence $\txinput = (\inputs,\outputs,\vbal)$ is
-a \emph{valid transaction input} if $\vbal =  \sum \val_i - \sum \outval_j$.
+a \emph{valid transaction base} if $\vbal =  \sum \val_i - \sum \outval_j$.
 
 We review note encryption and decryption from the spec in our notation.
 
@@ -1238,25 +1238,30 @@ Define
 In the spendability game \adv tries to create a ledger where a note succesfully decrypted with \ivk cannot be spent.
 Formally, the game proceeds as follows
 \begin{enumerate}
- \item We choose uniform $\sk = (\ask,\nsk)$; and give $\pak=\pak(\sk)$ to \adv.
-\item Let $\ivk \defeq \IVK(\pak)$. \adv outputs a ledger \ledger, a note $\note$, a valid transaction input $(\inputs=(\note),\outputs,\vbal)$,
+ \item We choose uniform $\sk = (\ask,\nsk)$; and give $\pak=(\ask\cdot \gsig, \nsk)$ to \adv.
+\item \adv outputs a ledger \ledger, a positioned note $(\note,\pos)$, a set of output notes \outputs, and
 a set of incoming viewing keys \ivks. 
 \item We choose random $\rcvs\in \F^{\ell+s}$ and compute $\tx = \maketx(\inputs,\outputs,\vbal,\ask)$.
-\item \adv wins iff 
+\item Let $\ivk \defeq \IVK(\ak,\nk)$. \adv wins iff 
 \begin{enumerate}
 \item $\note \in \dec(\ivk,\ledger)$.
+\item  $((\note),\outputs,\vbal)$ is a valid transaction base.
 \item For each $i\in [s]$, $\output_i$ belongs to $\ivk_i$.
  \item $\verifytx{\ledger}{\tx}$.
- \item For some $i\in [\ell]$, $\dec(\out_i,\ivk_i)$ does not return $\output_i$.
+ \item For some $i\in [s]$, $\dec(\out_i,\ivk_i)$ does not return $\output_i$.
 \end{enumerate}
 \end{enumerate}
 
+We wish to show that the success of any efficient \adv in this game is \negl.
+
+
 Let $\nk =\nsk\cdot\gnk$.
 Inspection of the protocol shows this exactly corresponds to the nullifer of \note with nullifer key \nk already appearing in the ledger.
+Thus, it suffices to prove the following.
 \begin{claim}\label{sapling-spendability}
  Fix any efficient \adv.
  Suppose that \adv  is given uniformly chosen \pak, and let $\ivk \defeq \IVK(\pak)$.
-The probability that \adv generates a ledger \ledger and note \note such that for some value \pos
+The probability that \adv generates a ledger \ledger and positoned note (\note,\pos) such that 
  \begin{enumerate}
   \item $(\note,\pos)\in \dec(\ivk,\ledger)$
   \item $\NF(\nk,\notecom(\note),\pos)\in \nfof{\ledger}$ 

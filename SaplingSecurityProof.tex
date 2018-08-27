@@ -890,7 +890,7 @@ overlapping nullifiers with the transactions signed previously by \oracle; preci
 \begin{remark}\label{rem:weirdstuff}
  A somewhat odd thing about the construction with the delegated spender, is that valid transactions signed by \oracle, do not exactly correspond to transactions whose inputs \oracle knows the spending key of. We can only say \oracle and \adv \emph{together} know the spending key.
  For example, given $(\ak,\nsk)$, \adv can choose random $s\in \F$, set $\ak' \defeq \ak + s\cdot \g$.   
- Now when \adv wants to sign an input in address \ak', i.e. with some randomized key $\rk = \ak'+ \alpha \g  = \ak + (s+\alpha)\cdot \g$,
+ Now when \adv wants to sign an input in address $\ak'$, i.e. with some randomized key $\rk = \ak'+ \alpha \g  = \ak + (s+\alpha)\cdot \g$,
  it can give \oracle the randomization $\alpha' = s+\alpha$.
  
  A way to avoid these oddities is to have \oracle only sign transactions where he recognizes the nullifiers as belonging to a note of his.
@@ -1084,10 +1084,10 @@ the signatures \sigs: same.
 \end{proof}
 \newcommand{\inpwitness}{\ensuremath{\mathsf{inpwit}}\xspace}
 \newcommand{\inpnote}{\ensuremath{\mathsf{inpnote}}\xspace}
-\newcommand{\extnote}{\ensuremath{\mathsf{extnote}}\xspace}
+\newcommand{\posnote}{\ensuremath{\mathsf{posnote}}\xspace}
 \newcommand{\inpnotes}{\ensuremath{{\mathcal{I}}}\xspace}
 \newcommand{\outnotes}{\ensuremath{{\mathcal{O}}}\xspace}
-\newcommand{\outwitness}{\ensuremath{\mathsf{inpwit}}\xspace}
+\newcommand{\outwitness}{\ensuremath{\mathsf{outwit}}\xspace}
 \newcommand{\outnote}{\ensuremath{\mathsf{outnote}}\xspace}
 \newcommand{\treehash}{\ensuremath{\mathsf{treehash}}\xspace}
 \subsection{Balance}
@@ -1105,22 +1105,23 @@ thus over-extracting from the pool corresponds to a constructing a ledger where 
  Given such a ledger \ledger, we can apply an extractor for the SNARK proofs in all inputs and ouputs in all transactions.
  For each transaction input $\inp\in \tx\in \ledger$, $\inp=(\cv,\nf,\rt,\rk,\pi)$, the extractor except w.p. \negl 
  outputs an input witness $\inpwitness = (\input=(\note,\path,\pos),\pak,\rcv,\alpha))$.
- We denote by $\extnote$ the \emph{extended note} corresponding to \inp, $\extnote \defeq (\note,\pos)$.
+ We denote by $\posnote$ the \emph{positioned note} corresponding to \inp, $\posnote \defeq (\note,\pos)$.
  Similarly for every transaction output in some \tx in \ledger, $\out = (\cv,\cm,\epk,\pi,\noteenc)$,
- the extractor outputs $\outwitness= (\note,\esk,\rcv)$. The value \pos for the output note can be deduced from when it was added to \ledger.
- So again we can define for each \out, the corresponding extended note $\extnote = (\note,\pos)$.
-For $i\in [n]$ let us denote respectively by $\inpnotes_i,\outnotes_i$ the extended input and output notes in $\tx_i$.
+ the extractor outputs $\outwitness= (\note,\esk,\rcv)$. The value \pos for the output note can be deduced from when it was added to \ledger,
+ i.e., the location of \cm in the commitment tree.
+ So again we can define for each \out, the corresponding positioned note $\posnote = (\note,\pos)$.
+For $i\in [n]$ let us denote respectively by $\inpnotes_i,\outnotes_i$ the positioned input and output notes in $\tx_i$.
 
 
-Let us denote by $\bal(\tx)$ the sum of note values in extendend input notes minus the sum of values in extended output notes.
-And by $\rand(\tx)$ the sum of values $\rcv$ in inputs notes minus the same of values \rcv in output notes.
+Let us denote by $\bal(\tx)$ the sum of note values in input notes of \tx minus the sum of values in output notes of \tx.
+And by $\rand(\tx)$ the sum of values $\rcv$ in input note witnesses of \tx minus the sum of values \rcv in output note witnesses of \tx.
 
 We will show two things hold e.w.p. \negl:
 \begin{enumerate}
 
 \item For each $i\in [n], \inpnotes_i \subset \outnotes_1\cup\ldots\cup\outnotes_{i-1}\setminus(\inpnotes_1\cup\ldots\cup\inpnotes_{i-1})$.
 
-This implies $\sum_{\tx\in\ledger} \bal(\tx) \leq 0$
+This implies $\sum_{\tx\in\ledger} \bal(\tx) \leq 0$.
 
 \item  For each $\tx\in \ledger$,
 \[\bal(\tx) = \vbal(\tx)\]
@@ -1134,13 +1135,13 @@ We construct \adv', such that when one of the above doesn't hold, \adv' produces
 produces a collision of \IVK,\notecom,\treehash or \valcom.
 
 \begin{enumerate}
-\item  \adv' first checks if  for some $i\in [n]$ and $\inp\in \tx_i, \extnote(\inp)\notin \outnotes_{<i}$.
+\item  \adv' first checks if  for some $i\in [n]$ and $\inp\in \tx_i, \posnote(\inp)\notin \outnotes_{<i}$.
 
 If so, let $\tx=\tx_i$. Let \rt be the root of the tree used in the public input of \inp; this is the tree $T_j$ formed from $\set{\tx_1,\ldots,\tx_j}$ for some $j<i$.
-Let $\extnote=(\gd,\pk,\val,\rcm,\pos)$ and $\cm=\notecom(\gd,\pk,\val,\rcm)$.
+Let $\posnote=(\gd,\pk,\val,\rcm,\pos)$ and $\cm=\notecom(\gd,\pk,\val,\rcm)$.
 \inpwitness contains a path $\path$ from \cm to \rt.
-If \pos is an index of a leaf in $T_j$, there exists an extended note $\extnote'$ that was inserted to this position when constructing the ledger
-and from \extnote' we can derive a path \path' from $\cm' = \notecom(\gd',\pk',\val',\rcm')$ in position \pos to \rt.
+If \pos is an index of a leaf in $T_j$, there exists an extended note $\posnote'$ that was inserted to this position when constructing the ledger
+and from \posnote' we can derive a path \path' from $\cm' = \notecom(\gd',\pk',\val',\rcm')$ in position \pos to \rt.
 If $\path\neq\path'$, then going down from \rt to the first difference between \path and \path'
 (ask Sean/Daira : is $T$ always a full tree with zeroes on other leaves? No you have filler values for the empty subtrees, need to check this are values that are hard to find route to - their impossible to find rout to - have no preimage)
 %Assuming \path' always exists (the zero-padding option)
@@ -1148,7 +1149,7 @@ this difference gives a collision of \treehash that \adv' can output.
 
 
 Otherwise, we have $\cm=\cm'$.
-\note must be different from \note' because $\extnote' = (\note',\pos)\in \outnotes_{<i}$ but $(\note,\pos)\notin \outnotes_{<i}$.
+\note must be different from \note' because $\posnote' = (\note',\pos)\in \outnotes_{<i}$ but $(\note,\pos)\notin \outnotes_{<i}$.
 
 Thus $\note,\note'$ is a collision of \notecom that \adv' can output.
 
@@ -1160,9 +1161,9 @@ So, similarly we follow \path and \path' to their first difference - a differenc
 
 
 \item Now \adv' checks if as a multiset $\inpnotes \defeq \inpnotes_1\cup\ldots\cup\inpnotes_n$ contains a repetition.
-That is, there exists $\extnote= (\gd,\pk,\val,\rcm,\pos)$ such that for two distinct transaction inputs $\inp = (\cv,\nf,\rt,\rk,\pi), \inp'=(\cv',\nf',\rt',\rk',\pi')$ in \ledger;
+That is, there exists $\posnote= (\gd,\pk,\val,\rcm,\pos)$ such that for two distinct transaction inputs $\inp = (\cv,\nf,\rt,\rk,\pi), \inp'=(\cv',\nf',\rt',\rk',\pi')$ in \ledger;
 if the corresponding extracted witnesses are $\inpwitness = (\input=(\note,\path,\pos),\pak,\rcv,\alpha)$,
-$\inpwitness' = (\input'=(\note',\path',\pos'),\pak',\rcv',\alpha')$; then $(\note,\pos) = (\note',\pos') = \extnote$.
+$\inpwitness' = (\input'=(\note',\path',\pos'),\pak',\rcv',\alpha')$; then $(\note,\pos) = (\note',\pos') = \posnote$.
 
 
 We show in this case that \adv' can output a collision of \IVK:
@@ -1197,13 +1198,15 @@ Hence $\adv'$ can output $(0,s), (v,R)$ as a collision of \valcom.
  
 \subsection{Spendability}
 
-\newcommand{\dec}{\ensuremath{\mathsf{decode}}\xspace}
+\newcommand{\dec}{\ensuremath{\mathsf{\mathbf{dec}}}\xspace}
 \newcommand{\np}{\ensuremath{\mathsf{np}}\xspace}
+\newcommand{\ghash}{\ensuremath{\mathsf{GH}}\xspace}
+\renewcommand{\d}{\ensuremath{\mathsf{d}}\xspace}
 \newcommand{\secret}{\ensuremath{\mathsf{shared\mhyphen secret}}\xspace}
 
 \paragraph{Valid transaction bases:}
 A sequence $\txinput = (\inputs,\outputs,\vbal)$ is
-a \emph{valid transaction base} if $\vbal =  \sum \val_i - \sum \outval_j$.
+a \emph{valid transaction base} if $\vbal =  \sum \val(\input_i) - \sum \val(\output_j)$.
 
 We review note encryption and decryption from the spec in our notation.
 
@@ -1221,22 +1224,24 @@ We review note encryption and decryption from the spec in our notation.
 $\dec(\ivk,\out=(\cv,\cm,\epk,\prf,\noteenc)):$
 \begin{enumerate}
 \item Let $K\defeq \epk\cdot \ivk$
- \item Suppose $\np=(\gd,\val,\rcm,\mathsf{memo})$. 
  \item Let $\np=\symdecrypt{K}{\noteenc}$. If \symdecrypt{}{} fails output \rej.
- \item Let $\pk\defeq \gd\cdot \pk$. Let $\note\defeq (\gd,\pk,\val,\rcm)$.
+ \item Suppose $\np=(\d,\val,\rcm,\mathsf{memo})$. If $\rcm\geq r$ output \rej. 
+\item Let $\gd\defeq \ghash(\d)$.
+ \item Let $\pk\defeq \gd\cdot \ivk$. Let $\note\defeq (\gd,\pk,\val,\rcm)$.
  \item Check that $\cm=\notecom(\note)$. Output \rej if not.
  \item Output \note.
 \end{enumerate}
 We define 
 %\[\dec(\ivks,\tx)\defeq \cup_{\sk\in\sks,\inp\in\inps}(\dec(\sk,\tx))\]
+\[\dec(\ivk,\tx) \defeq \cup_{\out\in\tx} \dec(\ivk,\out)),\]
 \[\dec(\ivk,\ledger) \defeq \cup_{\tx\in\ledger} \dec(\ivk,\tx))\]
-Define
+And also
 \[\nfof{\tx} \defeq \cup_{\inp\in\inps(\tx)}\nfof{\inp},\nfof{\ledger}\defeq\cup_{\tx\in\ledger}\nfof{\tx}\]
 %We consider an adversary \adv that has access to \signallinputs queries of \oracle, identically to the non-malleability section.
 % \adv receives a challenge $\pak = (\ak,\nsk)$ where $\nsk\in \F,\ak\in \G$ were chosen uniformly.
 % Let $\ivk\defeq \IVK(\pak)$.
 In the spendability game \adv tries to create a ledger where a note succesfully decrypted with \ivk cannot be spent.
-Formally, the game proceeds as follows
+Formally, the game proceeds as follows.
 \begin{enumerate}
  \item We choose uniform $\sk = (\ask,\nsk)$; and give $\pak=(\ask\cdot \gsig, \nsk)$ to \adv.
 \item \adv outputs a ledger \ledger, a positioned note $(\note,\pos)$, a set of output notes \outputs, and
@@ -1248,7 +1253,7 @@ a set of incoming viewing keys \ivks.
 \item  $((\note),\outputs,\vbal)$ is a valid transaction base.
 \item For each $i\in [s]$, $\output_i$ belongs to $\ivk_i$.
  \item $\verifytx{\ledger}{\tx}$.
- \item For some $i\in [s]$, $\dec(\out_i,\ivk_i)$ does not return $\output_i$.
+ \item For some $i\in [s]$, $\dec(\ivk_i,\out_i)$ does not return $\output_i$.
 \end{enumerate}
 \end{enumerate}
 

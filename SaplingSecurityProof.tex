@@ -273,6 +273,7 @@ Sapling Security Proof}
 \newcommand{\dist}{\ensuremath{\mathrm{\pi}}\xspace}
 \newcommand{\oracle}{\ensuremath{\mathscr O}\xspace}
 \newcommand{\oracleprime}{\ensuremath{\mathscr O'}\xspace}
+\newcommand{\g}{\ensuremath{\mathsf{g}}\xspace}
 
 \section{Signature schemes}
 %We assume all parties below have access to a random oracle \RO taking arbitrary strings as input and outputting uniform elements of \F.
@@ -492,6 +493,18 @@ is \negl.
 This is exactly what we had to prove.
 \end{proof}
 
+
+We state the following theorem that is almost implicit in \cite{PS00}
+\begin{thm}[Extractability of Schnorr]\label{thm:extractSchnorr}
+There is an algorithm \ext with the following property.
+Fix any efficient \adv and group element $\g\in\G$. Suppose that \adv produces w.p. $\gamma$
+$(\pk,\msg,\sig)$ such that $\versig^{\RO}_{\g}(\pk,\msg,\sig)$.
+Then given the output $(\pk,\msg,\sig)$ of \adv, and the internal randomness used by \adv in the run,
+\ext produces w.p $\gamma/2$ over (\adv)'s randomness and its own randomness $s\in\ F$ such that
+$\pk = s\cdot \g$.
+Furthermore, \ext's running time will be $P(\lambda)$ where $P$ is a polynomial depending on the running time of \adv.
+\end{thm}
+
  
 
 
@@ -621,7 +634,6 @@ This is exactly what we had to prove.
 \newcommand{\cm}{\ensuremath{\mathsf{cm}}\xspace}
 \newcommand{\nf}{\ensuremath{\mathsf{nf}}\xspace}
 \renewcommand{\path}{\ensuremath{\mathsf{path}}\xspace}
-\newcommand{\g}{\ensuremath{\mathsf{g}}\xspace}
 \newcommand{\cv}{\ensuremath{\mathsf{cv}}\xspace}
 \newcommand{\rt}{\ensuremath{\mathsf{rt}}\xspace}
 \newcommand{\prf}{\ensuremath{\pi}\xspace}
@@ -649,6 +661,13 @@ This is exactly what we had to prove.
 \newcommand{\sighash}{\ensuremath{\mathbf{sighash}}\xspace}
 \newcommand{\outverify}{\ensuremath{\mathbf{outverify}}\xspace}
 \newcommand{\MAXVAL}{\ensuremath{\mathsf{MAX}}\xspace}
+\newcommand{\GH}{\ensuremath{\mathrm{GH}}\xspace}
+
+\newcommand{\dec}{\ensuremath{\mathsf{\mathbf{dec}}}\xspace}
+\newcommand{\np}{\ensuremath{\mathsf{np}}\xspace}
+\newcommand{\ghash}{\ensuremath{\mathsf{GH}}\xspace}
+\renewcommand{\d}{\ensuremath{\mathsf{d}}\xspace}
+\newcommand{\secret}{\ensuremath{\mathsf{shared\mhyphen secret}}\xspace}
 
 \section{Description of Sapling}
  \subsection{Basic components}
@@ -695,6 +714,12 @@ A \emph{note} is a tupple $\note = (\gd,\pk,\val,\rcm)$ where
  \item $\val, \rcm \in \F$
  \item $\val \leq \MAXVAL$.
 \end{enumerate}
+
+\begin{remark}
+ It is convenient for us to define a note with \gd rather than its \GH-preimage \d as in the spec, as this is what's given as input to the circuits; there are minor non-expoitable issues with this, see e.g. https://github.com/zcash/zcash/issues/3490.
+\end{remark}
+
+
 
 For $\ivk \in \F$ we say \note \emph{belongs to \ivk} if $\pk =\ivk \cdot \g$.\\
 
@@ -1002,7 +1027,6 @@ And generates the corresponding keys $\ak\defeq \ask\cdot \g ,\nk\defeq \nsk\cdo
  \adv and \oracle initialize an empty set of current notes \curnotes. 
 \adv can make two kinds of queries.
 
-\newcommand{\GH}{\ensuremath{\mathrm{GH}}\xspace}
 \paragraph{Get new diversifed address queries}
 \begin{itemize}
 \item\oracle chooses $\gd\in \G$ according to the distribution \GH of the group hash output.
@@ -1096,13 +1120,18 @@ or more specifically, extract more money from the shielded pool than was put in 
 In Sapling, the value $\vbal=\vbal(\tx)$ in a transaction \tx corresponds to the alleged difference of spend and output values (see Section 4.12 in the spec) and \tx is thought of as having  ;
 thus over-extracting from the pool corresponds to a constructing a ledger where the sum of all \vbal values is strictly positive.
 \begin{claim}\label{clm:balance-sapling}
- The probability that efficient \adv generates ledger $\ledger=(\tx_1,\ldots,\tx_n)$ such that
+ The probability that an efficient \adv generates ledger $\ledger=(\tx_1,\ldots,\tx_n)$ such that
  \[\sum_{\tx\in \ledger} \vbal(\tx) >0 \]
  is \negl.
 \end{claim}
 
  \begin{proof}
- Given such a ledger \ledger, we can apply an extractor for the SNARK proofs in all inputs and ouputs in all transactions.
+ Given \adv that produces a ledger as in the claim statement w.p. $\gamma$, we construct an efficient \adv' that
+ w.p $\gamma/2-\negl$ produces a collision of \IVK,\notecom,\treehash or \valcom.
+ It follows that $\gamma =\negl$.
+\begin{enumerate}
+\item \adv' begins by running \adv and aborting if \adv hasn't output a ledger as in the claim.
+\item Otherwise, given such a ledger \ledger, \adv' can apply an extractor for each SNARK proof in all inputs and ouputs in all transactions.
  For each transaction input $\inp\in \tx\in \ledger$, $\inp=(\cv,\nf,\rt,\rk,\pi)$, the extractor except w.p. \negl 
  outputs an input witness $\inpwitness = (\input=(\note,\path,\pos),\pak,\rcv,\alpha))$.
  We denote by $\posnote$ the \emph{positioned note} corresponding to \inp, $\posnote \defeq (\note,\pos)$.
@@ -1113,29 +1142,14 @@ thus over-extracting from the pool corresponds to a constructing a ledger where 
 For $i\in [n]$ let us denote respectively by $\inpnotes_i,\outnotes_i$ the positioned input and output notes in $\tx_i$.
 
 
-Let us denote by $\bal(\tx)$ the sum of note values in input notes of \tx minus the sum of values in output notes of \tx.
-And by $\rand(\tx)$ the sum of values $\rcv$ in input note witnesses of \tx minus the sum of values \rcv in output note witnesses of \tx.
+We also use the extractor from theorem \ref{thm:extractSchnorr} to find $s$ such that $S=s\cdot \gr$
+where
+\[S\defeq\sum_{i=1}^\ell \cv_i - \sum_{i=\ell+1}^{\ell+s}\cv_i-\vbal\cdot \gv\]
+is the public key in the value binding signature \sigval.
 
-We will show two things hold e.w.p. \negl:
-\begin{enumerate}
+If one of the extractor runs fails \adv' aborts. Note that w.p. at least $\gamma/2 -\negl$ \adv' doesn't abort.
 
-\item For each $i\in [n], \inpnotes_i \subset \outnotes_1\cup\ldots\cup\outnotes_{i-1}\setminus(\inpnotes_1\cup\ldots\cup\inpnotes_{i-1})$.
-
-This implies $\sum_{\tx\in\ledger} \bal(\tx) \leq 0$.
-
-\item  For each $\tx\in \ledger$,
-\[\bal(\tx) = \vbal(\tx)\]
-\end{enumerate}
-
-When both of these happen together then 
-\[\sum_{\tx\in \ledger} \vbal(\tx) = \sum_{\tx\in\ledger} \bal(\tx) \leq 0\]
-
-
-We construct \adv', such that when one of the above doesn't hold, \adv' produces either 
-produces a collision of \IVK,\notecom,\treehash or \valcom.
-
-\begin{enumerate}
-\item  \adv' first checks if  for some $i\in [n]$ and $\inp\in \tx_i, \posnote(\inp)\notin \outnotes_{<i}$.
+\item  \adv' checks if for some $i\in [n]$ and $\inp\in \tx_i, \posnote(\inp)\notin \outnotes_{<i}$.
 
 If so, let $\tx=\tx_i$. Let \rt be the root of the tree used in the public input of \inp; this is the tree $T_j$ formed from $\set{\tx_1,\ldots,\tx_j}$ for some $j<i$.
 Let $\posnote=(\gd,\pk,\val,\rcm,\pos)$ and $\cm=\notecom(\gd,\pk,\val,\rcm)$.
@@ -1151,10 +1165,11 @@ this difference gives a collision of \treehash that \adv' can output.
 Otherwise, we have $\cm=\cm'$.
 \note must be different from \note' because $\posnote' = (\note',\pos)\in \outnotes_{<i}$ but $(\note,\pos)\notin \outnotes_{<i}$.
 
-Thus $\note,\note'$ is a collision of \notecom that \adv' can output.
+Thus $\note,\note'$ is a collision of \notecom. In this case, \adv' outputs this collision and terminates.
+
 
 Now suppose \pos is not a position of a leaf in $T_j$. This means there is only a partial path \path' in $T_j$ from \rt to a filler value with no preimage (see spec for details).
-So, similarly we follow \path and \path' to their first difference - a difference that must exist becaues of the filler value; and this gives us a collision of \treehash.
+So, similarly we follow \path and \path' to their first difference - a difference that must exist becaues of the filler value; and this gives us a collision of \treehash that \adv' outputs.
 
 
 
@@ -1181,14 +1196,35 @@ So $\ivk=\ivk'$ (Check with Sean is ivk canonical - checked)
 And thus, \adv' can output $(\ak,\nk),(\ak',\nk')$ as a collision of \IVK.
 
 
-\item At this point, we know that $\bal(\tx) \neq \vbal(\tx)$.
+\item Let us denote by $\bal(\tx)$ the (integer) sum of values in inputs of \tx minus the sum of values in output of \tx (notes meaning those output by the extractors);
+and by $\rand(\tx)$ the sum of values $\rcv$ in input witnesses of \tx minus the sum of values \rcv in output witnesses of \tx.
+When reaching this point with no output we know that:
+
+For each $i\in [n], \inpnotes_i \subset \outnotes_1\cup\ldots\cup\outnotes_{i-1}\setminus(\inpnotes_1\cup\ldots\cup\inpnotes_{i-1})$.
+
+This implies 
+\[\sum_{\tx\in\ledger} \bal(\tx) \leq 0.\]
+
+We claim that we must have for some $\tx\in\ledger$, $\bal(\tx)\neq \vbal(\tx)$:
+Otherwise, we would have
+\[\sum_{\tx\in \ledger} \vbal(\tx) = \sum_{\tx\in\ledger} \bal(\tx) \leq 0,\]
+
+contradicting the fact that \adv has mannaged to output \ledger with a positive sum of $\vbal$ values.
+
+Thus, let $\tx=\tx_i$ be such that $\bal(\tx)\neq\vbal(\tx)$. We show in the next step how \adv' uses this to output a collision of \valcom.
+
+\item At this point, we know that $\bal(\tx) \neq \vbal(\tx)$. As both these values are in the open interval \footnote{See 
+the spec for details: \vbal and \val in each transaction input/output are at most $2^{64}$ in absolute value, so assuming 
+less than, e.g., $2^{r-66}$ transaction inputs and outputs in any transaction, this is true.} $(-r/2,r/2)$, we have also $\bal(\tx)\neq \vbal(\tx)$ $(\mathrm{mod}\;  r)$.
 Suppose we are in this case with probability $\gamma$. We show how to find a collision of \valcom with probability
 $\gamma/\poly$. Since \tx verifies, we know that
 $\versig^{\RO}_{\gr}(S,\sighash(\rawtx),\sigval)$ for 
-\[S=\sum_{i=1}^\ell \cv_i - \sum_{i=\ell+1}^{\ell+s}\cv_i-\vbal\cdot \gv= \sum \val_i\cdot \gv + \sum\rcv_i \cdot \gr  - \vbal\cdot \gv.\]
-From \cite{schnorrSecurity}, with probability $\gamma/\poly$ we can find $s$ such that $s\cdot \gr = S$
-Thus we have $\valcom(0,s) = S$.
-Let $R=\sum_{i=1}^{\ell+s} \rcv_i$  and $v\defeq \bal(\tx)-\vbal(\tx)$.
+\[S=\sum_{i=1}^\ell \cv_i - \sum_{i=\ell+1}^{\ell+s}\cv_i-\vbal\cdot \gv= \left(\sum_{i=1}^{\ell} \val_i-\sum_{i=\ell+1}^{s} \val_i\right)\cdot \gv + \left(\sum_{i=1}^{\ell} \rcv_i-\sum_{i=\ell+1}^{s} \rcv_i\right)\cdot \gr  - \vbal\cdot \gv.\]
+Using Theorem \ref{thm:extractSchnorr}, we can
+with probability $\gamma/2$ we can use the forking lemma to rewind \adv while altering the response of \RO on the signature challenge in \sigval, and find $s$ such that $s\cdot \gr = S$.
+Thus, we have $\valcom(0,s) = S$.
+
+Let $R\defeq \sum_{i=1}^{\ell} \rcv_i-\sum_{i=\ell+1}^{s} \rcv_i$  and $v\defeq \bal(\tx)-\vbal(\tx)$.
 We also have $\valcom(v,R) = S$.
 Hence $\adv'$ can output $(0,s), (v,R)$ as a collision of \valcom.
 
@@ -1197,12 +1233,6 @@ Hence $\adv'$ can output $(0,s), (v,R)$ as a collision of \valcom.
  \end{proof}
  
 \subsection{Spendability}
-
-\newcommand{\dec}{\ensuremath{\mathsf{\mathbf{dec}}}\xspace}
-\newcommand{\np}{\ensuremath{\mathsf{np}}\xspace}
-\newcommand{\ghash}{\ensuremath{\mathsf{GH}}\xspace}
-\renewcommand{\d}{\ensuremath{\mathsf{d}}\xspace}
-\newcommand{\secret}{\ensuremath{\mathsf{shared\mhyphen secret}}\xspace}
 
 \paragraph{Valid transaction bases:}
 A sequence $\txinput = (\inputs,\outputs,\vbal)$ is
@@ -1220,8 +1250,9 @@ We review note encryption and decryption from the spec in our notation.
 
 
 
-\paragraph{Decrypting notes:}
-$\dec(\ivk,\out=(\cv,\cm,\epk,\prf,\noteenc)):$
+\paragraph{Decrypting notes:\\}
+\noindent
+$\underline{\dec(\ivk,\out=(\cv,\cm,\epk,\prf,\noteenc))}$
 \begin{enumerate}
 \item Let $K\defeq \epk\cdot \ivk$
  \item Let $\np=\symdecrypt{K}{\noteenc}$. If \symdecrypt{}{} fails output \rej.
@@ -1232,9 +1263,8 @@ $\dec(\ivk,\out=(\cv,\cm,\epk,\prf,\noteenc)):$
  \item Output \note.
 \end{enumerate}
 We define 
-%\[\dec(\ivks,\tx)\defeq \cup_{\sk\in\sks,\inp\in\inps}(\dec(\sk,\tx))\]
-\[\dec(\ivk,\tx) \defeq \cup_{\out\in\tx} \dec(\ivk,\out)),\]
-\[\dec(\ivk,\ledger) \defeq \cup_{\tx\in\ledger} \dec(\ivk,\tx))\]
+\[\dec(\ivk,\tx) \defeq \cup_{\out\in\tx} \dec(\ivk,\out),\]
+\[\dec(\ivk,\ledger) \defeq \cup_{\tx\in\ledger} \dec(\ivk,\tx)\]
 And also
 \[\nfof{\tx} \defeq \cup_{\inp\in\inps(\tx)}\nfof{\inp},\nfof{\ledger}\defeq\cup_{\tx\in\ledger}\nfof{\tx}\]
 %We consider an adversary \adv that has access to \signallinputs queries of \oracle, identically to the non-malleability section.

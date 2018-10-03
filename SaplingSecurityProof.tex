@@ -500,7 +500,7 @@ There is an algorithm \ext with the following property.
 Fix any efficient \adv and group element $\g\in\G$. Suppose that \adv produces w.p. $\gamma$
 $(\pk,\msg,\sig)$ such that $\versig^{\RO}_{\g}(\pk,\msg,\sig)$.
 Then given the output $(\pk,\msg,\sig)$ of \adv, and the internal randomness used by \adv in the run,
-\ext produces w.p $\gamma/2$ over (\adv)'s randomness and its own randomness $s\in\ F$ such that
+\ext produces w.p $\gamma/2$ over (\adv)'s randomness and its own randomness $s\in\F$ such that
 $\pk = s\cdot \g$.
 Furthermore, \ext's running time will be $P(\lambda)$ where $P$ is a polynomial depending on the running time of \adv.
 \end{thm}
@@ -595,7 +595,7 @@ Furthermore, \ext's running time will be $P(\lambda)$ where $P$ is a polynomial 
 \newcommand{\makeoutputandnote}{\ensuremath{\mathsf{makeoutputandnote}}\xspace}
 \newcommand{\maketx}{\ensuremath{\mathsf{maketx}}\xspace}
 \newcommand{\makerandomizedtx}{\ensuremath{\mathsf{makerandomizedtx}}\xspace}
-\newcommand{\formtx}{\ensuremath{\mathsf{formtx}}\xspace}
+\newcommand{\bindvaltx}{\ensuremath{\mathsf{bindval}}\xspace}
 \newcommand{\signtx}[1]{\ensuremath{\mathsf{signtx}(#1)}\xspace}
 \newcommand{\notecom}{\ensuremath{\mathbf{NC}}\xspace}
 \newcommand{\valcom}{\ensuremath{\mathbf{VC}}\xspace}
@@ -701,7 +701,7 @@ I know $\note=(\gd,\pk,\val,\rcm),\rcv,\esk$ such that
 I know $\path,\pos,\note=(\gd,\pk,\val,\rcm),\cm,\rcv,\alpha,\ak,\nsk$ such that 
 \begin{enumerate}
  \item $\cm = \notecom(\note)$.
- \item \path is a merkle path from \cm at position \pos to \rt.
+ \item Either $\val=0$ (``dummy note''); or \path is a merkle path from \cm at position \pos to \rt.
  \item $\rk = \ak + \alpha \cdot \gsig$.
  \item Setting $\nk \defeq \nsk\cdot \gnk, \ivk \defeq \IVK(\ak,\nk)$, we have $\pk=\ivk\cdot \gd$.
  \item $\nf = \NF(\nk,\cm,\pos)$
@@ -761,8 +761,8 @@ where $\pak=(\ak,\nsk)
 \item \cm = \notecom(\note)
  \item \nf = \NF(\cm,\nk,\pos)
  \item Define $\rk\defeq \ak +\alpha\cdot \g, \cv\defeq  \val\cdot \gv+ \rcv\cdot \gr $.
- \item Define $\prf = \provspend(\rt,\nf,\rk,\cv;\note,\pak,\alpha,\path,\pos)$.
- \item Output $(\nf,\rt,\rk,\cv,\pi)$.
+ \item Let $\prf = \provspend(\rt,\nf,\rk,\cv;\note,\pak,\alpha,\path,\pos)$.
+ \item Output $(\cv,\rt,\nf,\rk,\pi)$.
 \end{enumerate}
 
 \noindent
@@ -787,7 +787,7 @@ where $\pak=(\ak,\nsk)
  \item Let $\note \defeq (\gd,\pk,\val,\rcm)$. Output $(\cv,\cm,\epk,\prf,\noteenc,\note)$
 \end{enumerate}
 \noindent
-\underline{\formtx(\rawtx=(\inps,\outs,\vbal),\rcvs)}
+\underline{\bindvaltx(\rawtx=(\inps,\outs,\vbal),\rcvs)}
 
 \begin{enumerate}
  \item Let $r\defeq\sum_{i=1}^\ell \rcv_i - \sum_{i=\ell+1}^{\ell+s}\rcv_i$
@@ -814,8 +814,8 @@ where $\input_j = (\note_j,\pak_j,\path_j,\pos_j), \output_j =(\gd_j,\pk_j,\val_
  \item Choose random $\rcms, \alphas \leftarrow \F^{\ell},\rcvs\in \F^s$.
  \item For $j\in [\ell]$, $\inp_j = \makeinput(\input_j,\rcv_j)$
  \item For $j\in [s]$, $\out_j=\makeoutput(\output_j,\rcm_j,\rcv_j)$
- \item $\pretx = \formtx(\inps,\outs,\vbal)$.
- \item Choose random $\alphas\in \F^{\ell+s}$.
+ \item $\pretx = \bindvaltx(\inps,\outs,\vbal)$.
+ \item Choose random $\alphas\in \F^{\ell}$.
  \item Let $\tx = \signtx{\pretx,\ask,\alphas}$
 \end{enumerate}
 
@@ -827,7 +827,7 @@ where $\input_j = (\val_j,\note_j,\pak_j,\path_j,\pos_j), \output_j =(\gd_j,\pk_
  \item For $j\in [\ell]$, $\inp_j = \makeinput(\input_j,\rcv_j,\alpha_j,\pak)$
  \item For $j\in [s]$, $\out_j=\makeoutput(\output_j,\rcv_j)$
  \item Let $\vbal \defeq \sum_{i=1}^\ell\val_i - \sum_{j=\ell+1}^{\ell+s}\val_j$.
- \item $\pretx = \formtx(\inps,\outs,\vbal,\rcvs)$.
+ \item $\pretx = \bindvaltx(\inps,\outs,\vbal,\rcvs)$.
  \item Let $\tx = \signtx{\pretx,\alphas,\ask}$
 \end{enumerate}
 
@@ -1139,7 +1139,7 @@ thus over-extracting from the pool corresponds to a constructing a ledger where 
  the extractor outputs $\outwitness= (\note,\esk,\rcv)$. The value \pos for the output note can be deduced from when it was added to \ledger,
  i.e., the location of \cm in the commitment tree.
  So again we can define for each \out, the corresponding positioned note $\posnote = (\note,\pos)$.
-For $i\in [n]$ let us denote respectively by $\inpnotes_i,\outnotes_i$ the positioned input and output notes in $\tx_i$.
+For $i\in [n]$ let us denote respectively by $\inpnotes_i,\outnotes_i$ the positioned input and output notes in $\tx_i$ \emph{with non-zero value}\footnote{Sapling enables the creation of dummy notes with zero value, for which the spend statement doesn't check Merkle path validity, cf. Section 4.7.2 in the spec).}.
 
 
 We also use the extractor from theorem \ref{thm:extractSchnorr} to find $s$ such that $S=s\cdot \gr$
@@ -1306,27 +1306,24 @@ The probability that \adv generates a ledger \ledger and positoned note (\note,\
 \begin{proof}
 Let $\gamma$ be the probability that \adv outputs $\ledger,\note$ satisfying the two properties in the claim.
 We construct an efficient \advprime that receives a forgery challenge \ak of \schnorr and w.p. $\gamma-\negl$ does one of the following.
-\begin{enumerate}
-\item Outputs a collision of \NF.
- \item Outputs a collision of \notecom.
- \item Outputs a collision of \IVK.
- \item Outputs a forgery w.r.t to randomization of \schnorr for the challenge \ak.
-\end{enumerate}
+\begin{itemize}
+\item Output a collision of either \NF, \notecom or \IVK.
+ \item Output a forgery w.r.t to randomization of \schnorr for the challenge \ak.
+\end{itemize}
 
 
+\advprime works as follows.
 
-signature forger \advprime against randomized \schnorr in a similar way to Claim \ref{clm:nmal-sapling}
-that succeeds w.p. $\gamma-\negl$.
  \begin{enumerate}
   \item  \advprime receives a challenge \ak; chooses random $\nsk\in \F$ and sends $\pak=(\ak,\nsk)$ to \adv.
-\item \advprime receives the output \ledger,\note of \adv.
-\item \advprime checks that $\ledger,\note$ satisfy the two properties in the claim; if not it aborts.
-\item  Let $\nf \defeq \NF(\nk,\notecom(\note),\pos)$
+\item \advprime receives the output $(\ledger,\note,\pos)$ of \adv.
+\item \advprime checks that $\ledger,(\note,\pos)$ satisfy the two properties in the claim; if not it aborts.
+\item  Let $\nf \defeq \NF(\nk,\notecom(\note),\pos)$.
 Fix the $\out,\tx$ with $\out\in\tx\in \ledger$ such that $\dec(\ivk,\out) = (\note,\pos)$.
 \out contains a valid SNARK proof for \spendstatement{\rt,\cv,\nf,\rk} for some $\cv,\rt$.
-Apply the relevant extractor \ext relating to the snark proof \adv to
-obtain e.w.p \negl a witness $\path,\pos,\gd',\pk',\val',\rcm',\cm',\rcv',\alpha,\ak',\nsk'$ for the statement.
-\item Let $\nk' \defeq \nsk'\cdot \gd$. If $(\nk,\cm,\pos)\neq (\nk',\cm',\pos')$, \advprime outputs $(\nk,\cm,\pos),(\nk',\cm',\pos')$ as a collision of \NF.
+Apply the relevant extractor \ext relating to the snark proof to
+obtain e.w.p \negl a witness $\path,\pos',\gd',\pk',\val',\rcm',\cm',\rcv',\alpha,\ak',\nsk'$ for the statement.
+\item Let $\nk' \defeq \nsk'\cdot \gnk$. If $(\nk,\cm,\pos)\neq (\nk',\cm',\pos')$, \advprime outputs $(\nk,\cm,\pos),(\nk',\cm',\pos')$ as a collision of \NF.
 \item Otherwise, let $\note' = (\gd',\pk',\val',\rcm')$. We have $\cm=\notecom(\note)=\notecom(\note')$. If $(\gd',\pk',\val')\neq (\gd,\pk,\val)$, \advprime outputs $(\note,\note')$ as a collision of \notecom.
 \item Otherwise, we must have $\ivk'=\ivk$ (cause $\gd\cdot \ivk = \gd \cdot \ivk' = \pk$). Then $\ivk = \IVK(\ak',\nk)$ (by this stage we know $\nk=\nk'$).
 If $\ak\neq \ak'$, \advprime outputs $(\ak,\nk),  (\ak',\nk)$ as a collision of \IVK.
@@ -1340,6 +1337,10 @@ and \advprime outputs $(\alpha, \rawtx, \sig)$ as a forgery of \schnorr with cha
 
 
 
+\begin{remark}
+ Note that in the spendability and non-malleability property \adv can choose what value \nf to work with.
+ It seems likely that in a weaker model where the values \nf 
+\end{remark}
 
 
 

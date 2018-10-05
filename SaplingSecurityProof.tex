@@ -622,7 +622,7 @@ Furthermore, \ext's running time will be $P(\lambda)$ where $P$ is a polynomial 
 \newcommand{\nk}{\ensuremath{\mathsf{nk}}\xspace}
 \newcommand{\ovk}{\ensuremath{\mathsf{ovk}}\xspace}
 \newcommand{\ivk}{\ensuremath{\mathsf{ivk}}\xspace}
-\newcommand{\IVK}{\ensuremath{\mathsf{IVK}}\xspace}
+\newcommand{\IVK}{\ensuremath{\mathbf{IVK}}\xspace}
 \newcommand{\nsk}{\ensuremath{\mathsf{nsk}}\xspace}
 \newcommand{\ask}{\ensuremath{\mathsf{ask}}\xspace}
 \newcommand{\signallinputs}{\ensuremath{\mathsf{sign\mhyphen all\mhyphen inputs}}\xspace}
@@ -653,6 +653,7 @@ Furthermore, \ext's running time will be $P(\lambda)$ where $P$ is a polynomial 
 \newcommand{\val}{\ensuremath{\mathsf{v}}\xspace}
 \newcommand{\outval}{\ensuremath{\mathsf{ov}}\xspace}
  \newcommand{\NF}{\ensuremath{\mathbf{NF}}\xspace}
+ \newcommand{\KDF}{\ensuremath{\mathbf{KDF}}\xspace}
 % \newcommand{\createaddr}{\ensuremath{\mathsf{createaddr}}\xspace}
 \newcommand{\provoutput}{\ensuremath{\pi_{\mathsf{output}}}\xspace}
 \newcommand{\provspend}{\ensuremath{\pi_{\mathsf{spend}}}\xspace}
@@ -668,7 +669,7 @@ Furthermore, \ext's running time will be $P(\lambda)$ where $P$ is a polynomial 
 \newcommand{\ghash}{\ensuremath{\mathsf{GH}}\xspace}
 \renewcommand{\d}{\ensuremath{\mathsf{d}}\xspace}
 \newcommand{\secret}{\ensuremath{\mathsf{shared\mhyphen secret}}\xspace}
-
+\newcommand{\jof}[1]{\ensuremath{#1_j}\xspace}
 \section{Description of Sapling}
  \subsection{Basic components}
 \subsection*{Functions, and their requirements:}
@@ -745,14 +746,14 @@ A \emph{transaction input}, usually denoted \inp, is the final form an input app
 
 
 We make the simplifying assumption in this writeup; that \emph{there is only one spending key $(\ask,\nsk)$ involved, and all addresses are diversifed addresses derived from this spending key}.
-For the indistinguishability property, we make the simplifying assumption that the Merkle tree used is always the one consisting of all ledger transaction up to the point of the new transaction (whereas in reality, one might prefer to use a somewhat older tree to protect against the possiblity of block reorgs. Thus in practice there may be some leakage about the input note's ``age'' that is not captured here).
+% For the indistinguishability property, we make the simplifying assumption that the Merkle tree used is always the one consisting of all ledger transaction up to the point of the new transaction (whereas in reality, one might prefer to use a somewhat older tree to protect against the possiblity of block reorgs. Thus in practice there may be some leakage about the input note's ``age'' that is not captured here).
 
 \subsection{Methods}
 
 We use the convention that $\ell$ denotes the number of inputs in a transaction, and $s$ the number of outputs.
 
 \noindent
-\underline{$\makeinput(\input=(\note,\path,\pos),\pak,\rcv,\alpha)$}
+\underline{$\makeinput(\rt,\input=(\note,\path,\pos),\pak,\rcv,\alpha)$}
 
 where $\pak=(\ak,\nsk)
 ,\note=(\gd,
@@ -776,16 +777,16 @@ where $\pak=(\ak,\nsk)
  \item Let $\prf = \provoutput(\epk,\cm,\cv;\note,\rcv,\esk)$.
  \item Output $(\cv,\cm,\epk,\prf,\noteenc)$
 \end{enumerate}
-\underline{\makeoutputandnote(\gd,\pk,\val)},
-\begin{enumerate}
- \item Choose random $\rcm,\rcv,\esk\in \F$.
- \item Let $\cv\defeq \val\cdot \gv + \rcm\cdot \gr$.
- \item Let $\note = (\gd,\pk,\val,\rcm)$ and $\cm\defeq \notecom(\note)$.
- \item Let $\epk = \esk\cdot \gd$.
- \item Let $\noteenc = \symencrypt{\esk\cdot \gd}{\note}$
- \item Let $\prf = \provoutput(\epk,\cm,\cv;\note,\rcv,\esk)$.
- \item Let $\note \defeq (\gd,\pk,\val,\rcm)$. Output $(\cv,\cm,\epk,\prf,\noteenc,\note)$
-\end{enumerate}
+% \underline{\makeoutputandnote(\gd,\pk,\val)},
+% \begin{enumerate}
+%  \item Choose random $\rcm,\rcv,\esk\in \F$.
+%  \item Let $\cv\defeq \val\cdot \gv + \rcm\cdot \gr$.
+%  \item Let $\note = (\gd,\pk,\val,\rcm)$ and $\cm\defeq \notecom(\note)$.
+%  \item Let $\epk = \esk\cdot \gd$.
+%  \item Let $\noteenc = \symencrypt{\esk\cdot \gd}{\note}$
+%  \item Let $\prf = \provoutput(\epk,\cm,\cv;\note,\rcv,\esk)$.
+%  \item Let $\note \defeq (\gd,\pk,\val,\rcm)$. Output $(\cv,\cm,\epk,\prf,\noteenc,\note)$
+% \end{enumerate}
 \noindent
 \underline{\bindvaltx(\rawtx=(\inps,\outs,\vbal),\rcvs)}
 
@@ -805,14 +806,18 @@ where $\pak=(\ak,\nsk)
  \item Output $(\rawtx,\sigs)$.
 \end{enumerate}
 
+Given $(\rt,\vbal)$ we say $(\inputs,\outputs)$ is \emph{consistent} with $\rt,\vbal$,
+if for each $j\in [\ell]$ $\input_j$ contains a path \jof{\pak} from $\notecom(\note_j)$ to \rt;
+and
+\[\sum_{j=1}^{\ell} \val_j-\sum_{j=\ell+1}^{s} \val_j=0\]
 \noindent
-\underline{\makerandomizedtx(\inputs,\outputs,\vbal)}
+\underline{\makerandomizedtx(\rt,\vbal,\inputs,\outputs)}
 
 \noindent
 where $\input_j = (\note_j,\pak_j,\path_j,\pos_j), \output_j =(\gd_j,\pk_j,\val_j)$
 \begin{enumerate}
- \item Choose random $\rcms, \alphas \leftarrow \F^{\ell},\rcvs\in \F^s$.
- \item For $j\in [\ell]$, $\inp_j = \makeinput(\input_j,\rcv_j)$
+ \item Choose random $ \alphas \leftarrow \F^{\ell},\rcms,\rcvs\in \F^s$.
+ \item For $j\in [\ell]$, $\inp_j = \makeinput(\rt,\input_j,\rcv_j)$
  \item For $j\in [s]$, $\out_j=\makeoutput(\output_j,\rcm_j,\rcv_j)$
  \item $\pretx = \bindvaltx(\inps,\outs,\vbal)$.
  \item Choose random $\alphas\in \F^{\ell}$.
@@ -1064,15 +1069,26 @@ We
 \end{proof}
 \subsection{Indistinguishability w.r.t outside adversaries}
 \begin{claim}\label{clm:indist-sapling}
-Fix any efficient \adv.
-Suppose that \adv interacts with \oracle as described above.
-Then \adv outputs $\ell,s,\inputs,\outputs,\inputs',\outputs', |\inputs|=|\inputs'|=\ell,|\outputs|=|\outputs'|=s$.
-$\input_j\in \curnotes$
-$\output_j$ being a note plaintext $\output_j\defeq (\gd_j,\pk_j,\val_j)$
-such that $\vbal = \vbal'$.
-Let $M_1\defeq \makerandomizedtx(\inputs,\outputs),M_2\defeq \makerandomizedtx(\inputs',\outputs')$.
-% \oracle sends $M_1 \defeq \maketransaction(I_1), M_2\defeq \maketransaction(I_2)$
-Then the probability that \adv can distinguish between $M_1$ and $M_2$ is \negl.
+% Fix any efficient \adv.
+% Suppose that \adv interacts with \oracle as described above.
+% Then \adv outputs $\ell,s,\inputs,\outputs,\inputs',\outputs', |\inputs|=|\inputs'|=\ell,|\outputs|=|\outputs'|=s$.
+Fix any $\rt,\vbal$.
+Fix any $(\inputs,\outputs)$ that is consistent with $\rt,\vbal$.
+%Denote by $\disttx(\inputs,\outputs)$ the distribution of $\makerandomizedtx(\rt,\vbal,\inputs,\outputs)$.
+Assume \NF, \KDF are random oracles, and that \symencrypt{K}{m} produces a uniform output when $K$ is uniform and $m$ is fixed.
+
+Then
+\begin{enumerate}
+ \item 
+the distribution of $\makerandomizedtx(\rt,\vbal,\inputs,\outputs)$ depends only on $(\rt,\vbal)$.
+\item For any $(\inputs',\outputs')$ with $|\inputs'|=\ell,|\outputs'|=s$ that is also consistent with $\rt,\vbal$, such that the notes in $\inputs'$ are disjoint from those in \inputs;	
+the distribution of
+
+$\makerandomizedtx(\rt,\vbal,\inputs',\outputs')$, over the inner randomness of \makerandomizedtx, the SNARK prover, and that of the random oracles \NF,\KDF, is independent from 
+$\makerandomizedtx(\rt,\vbal,\inputs,\outputs)$.
+
+\end{enumerate}
+
 
 \end{claim}
 \begin{proof}

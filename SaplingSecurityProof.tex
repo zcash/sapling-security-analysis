@@ -623,6 +623,7 @@ Furthermore, \ext's running time will be $P(\lambda)$ where $P$ is a polynomial 
 \newcommand{\ovk}{\ensuremath{\mathsf{ovk}}\xspace}
 \newcommand{\ivk}{\ensuremath{\mathsf{ivk}}\xspace}
 \newcommand{\IVK}{\ensuremath{\mathbf{IVK}}\xspace}
+\newcommand{\MPH}{\ensuremath{\mathbf{MPH}}\xspace}
 \newcommand{\nsk}{\ensuremath{\mathsf{nsk}}\xspace}
 \newcommand{\ask}{\ensuremath{\mathsf{ask}}\xspace}
 \newcommand{\signallinputs}{\ensuremath{\mathsf{sign\mhyphen all\mhyphen inputs}}\xspace}
@@ -762,7 +763,7 @@ where $\pak=(\ak,\nsk)
 \item \cm = \notecom(\note)
  \item \nf = \NF(\cm,\nk,\pos)
  \item Define $\rk\defeq \ak +\alpha\cdot \g, \cv\defeq  \val\cdot \gv+ \rcv\cdot \gr $.
- \item Let $\prf = \provspend(\rt,\nf,\rk,\cv;\note,\pak,\alpha,\path,\pos)$.
+ \item Let $\prf = \provspend(\cv,\rt,\nf,\rk;\note,\pak,\alpha,\path,\pos)$.
  \item Output $(\cv,\rt,\nf,\rk,\pi)$.
 \end{enumerate}
 
@@ -807,21 +808,28 @@ where $\pak=(\ak,\nsk)
 \end{enumerate}
 
 Given $(\rt,\vbal)$ we say $(\inputs,\outputs)$ is \emph{consistent} with $\rt,\vbal$,
-if for each $j\in [\ell]$ $\input_j$ contains a path \jof{\pak} from $\notecom(\note_j)$ to \rt;
+
+if
+\begin{itemize}
+ \item for each $j\in [\ell]$ $\input_j$ contains a path \jof{\pak} from $\notecom(\note_j)$ to \rt,
+ \item $\sum_{j=1}^{\ell} \val_j-\sum_{j=\ell+1}^{s} \val_j=0$.
+ \item the positions \sett{\pos_j}{j\in [\ell]} are all distinct.
+\end{itemize}
+
+
 and
-\[\sum_{j=1}^{\ell} \val_j-\sum_{j=\ell+1}^{s} \val_j=0\]
 \noindent
 \underline{\makerandomizedtx(\rt,\vbal,\inputs,\outputs)}
 
 \noindent
 where $\input_j = (\note_j,\pak_j,\path_j,\pos_j), \output_j =(\gd_j,\pk_j,\val_j)$
 \begin{enumerate}
- \item Choose random $ \alphas \leftarrow \F^{\ell},\rcms,\rcvs\in \F^s$.
+ \item Choose random $\rcms,\rcvs\in \F^s$.
  \item For $j\in [\ell]$, $\inp_j = \makeinput(\rt,\input_j,\rcv_j)$
  \item For $j\in [s]$, $\out_j=\makeoutput(\output_j,\rcm_j,\rcv_j)$
  \item $\pretx = \bindvaltx(\inps,\outs,\vbal)$.
  \item Choose random $\alphas\in \F^{\ell}$.
- \item Let $\tx = \signtx{\pretx,\ask,\alphas}$
+ \item Output $\tx = \signtx{\pretx,\ask,\alphas}$
 \end{enumerate}
 
 \noindent
@@ -1075,31 +1083,51 @@ We
 Fix any $\rt,\vbal$.
 Fix any $(\inputs,\outputs)$ that is consistent with $\rt,\vbal$.
 %Denote by $\disttx(\inputs,\outputs)$ the distribution of $\makerandomizedtx(\rt,\vbal,\inputs,\outputs)$.
-Assume \NF, \KDF are random oracles, and that \symencrypt{K}{m} produces a uniform output when $K$ is uniform and $m$ is fixed.
 
-Then
+Assume that 
 \begin{enumerate}
  \item 
-the distribution of $\makerandomizedtx(\rt,\vbal,\inputs,\outputs)$ depends only on $(\rt,\vbal)$.
-\item For any $(\inputs',\outputs')$ with $|\inputs'|=\ell,|\outputs'|=s$ that is also consistent with $\rt,\vbal$, such that the notes in $\inputs'$ are disjoint from those in \inputs;	
-the distribution of
-
-$\makerandomizedtx(\rt,\vbal,\inputs',\outputs')$, over the inner randomness of \makerandomizedtx, the SNARK prover, and that of the random oracles \NF,\KDF, is independent from 
-$\makerandomizedtx(\rt,\vbal,\inputs,\outputs)$.
-
+$\NF(\nk,\cm,\pos)= \RO(\nk,\MPH(\cm,\pos))$ where \RO is a random oracle and \MPH is a collision-resistant function.
+\item
+\KDF is also a random oracle.
+\item \symencrypt{K}{m} produces a uniform output when $K$ is uniform and $m$ is fixed.
 \end{enumerate}
 
 
+
+
+
+Then, the probability of an efficient \adv finding $\rt,\vbal,\inputs,\outputs,\inputs',\outputs'$
+such that
+\begin{itemize}
+ \item 
+$|\inputs|=|\inputs'| = \ell$, $|\outputs|=|\outputs'| =s $. 
+\item The notes in \inputs and $\inputs'$ are all distinct.
+\item $(\inputs,\outputs)$ and $(\inputs',\outputs')$ are both consistent with $\rt,\vbal$
+\item The distributions $D\defeq \makerandomizedtx(\rt,\vbal,\inputs,\outputs)$ and $D'\defeq \makerand\makerandomizedtx(\rt,\vbal,\inputs',\outputs')$
+\end{itemize}
+is \negl.
+
 \end{claim}
 \begin{proof}
- We consider the elements of $M_1$ and $M_2$ 
- Given the inputs $I_1,I_2$ of \adv.
- We claim first that $\inp_1,\ldots,\inp_\ell \in M_1,\inp'_1,\ldots,\inp'_\ell\in M_2$ are all independent from each other.
+The output of \makerandomizedtx is of the form $(\inps,\outs,\sigs)$.
+$\inp_1,\ldots,\inp_\ell, \out_1,\ldots,\out_s$ are all independent from each other. (Here we use that \set{\pos_j} are all different and thus \set{\nf_j}
+are independent values of the random oracle \NF at distinct inputs).
+$\sig_1,\ldots,\sig_\ell$ are independent from each other, depend on \inps and the inner randomness of the signer.
+
+
+$\inp_j$ has the form
+\[\inp_j = (\nf,\rt,\rk\cv,\prf)\]
+
+We show that the distribution of each element in $\inp_j$, conditioned on the previous elements depends only on the value of the previous elements together with $\rt,\vbal$.
+We also show for each element that its distribution is independent of that of the same element in $D'$
  
  Such an element $\inp=(\nf,\rt,\rk,\cv,\prf)$
  \begin{itemize}
-  \item 
- $\nf = \NF(\nk,\cm,\pos)$ (if all from same address then given \cm, \pos 
+  \item  $\nf = \NF(\nk,\cm,\pos)$. This is a random oracle value, depending only on the randomness of \NF. It is independent of $\nf'$ which is a value of 
+  $\NF$ on a distinct input because $\pos_j\neq \pos'_j$.
+  
+  
  \nk is common randomness, if NF random oracle then \nf s are uniform and independet.
  \item \rt: Assume same in all inputs?
  \item \rk: uniform and independent for each \inp, assuming $\alpha$ is uniform
@@ -1404,7 +1432,6 @@ encryption of $x$: [\sk]
 \bibliography{refs}
 \bibliographystyle{plain}
 \end{document}
-
 
 
 

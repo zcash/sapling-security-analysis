@@ -1087,14 +1087,13 @@ Fix any $(\inputs,\outputs)$ that is consistent with $\rt,\vbal$.
 Assume that 
 \begin{enumerate}
  \item 
-$\NF(\nk,\cm,\pos)= \RO(\nk,\MPH(\cm,\pos))$ where \RO is a random oracle and \MPH is a collision-resistant function.
+$\NF(\nk,\notecom(\note),\pos)= \RO(\nk,\MPH(\note,\pos))$ where \RO is a random oracle and \MPH is a collision-resistant function\footnote{The requirement here may seem a bit odd; it models the fact the $\notecom(\note)$ is a pedersen hash which is combined in \NF with a $\pos$-multiple of an independent group generator, followed by an application of BLAKE-2 on the result prefixed with \nk. In particular, BLAKKE-2 takes the place of \RO in the impelmentation.}
+
 \item
 \KDF is also a random oracle.
 \item \symencrypt{K}{m} produces a uniform output when $K$ is uniform and $m$ is fixed.
+\item The SNARK we are using is witness indistinguishable - i.e. the proof distribution depends \emph{only} on the public input and not on the witness.
 \end{enumerate}
-
-
-
 
 
 Then, the probability of an efficient \adv finding $\rt,\vbal,\inputs,\outputs,\inputs',\outputs'$
@@ -1102,9 +1101,13 @@ such that
 \begin{itemize}
  \item 
 $|\inputs|=|\inputs'| = \ell$, $|\outputs|=|\outputs'| =s $. 
-\item The notes in \inputs and $\inputs'$ are all distinct.
+\item The positioned notes in \inputs and $\inputs'$ are all distinct.
 \item $(\inputs,\outputs)$ and $(\inputs',\outputs')$ are both consistent with $\rt,\vbal$
-\item The distributions $D\defeq \makerandomizedtx(\rt,\vbal,\inputs,\outputs)$ and $D'\defeq \makerand\makerandomizedtx(\rt,\vbal,\inputs',\outputs')$
+\item The distributions of the random variables $D\defeq \makerandomizedtx(\rt,\vbal,\inputs,\outputs)$ and 
+
+$D'\defeq \makerandomizedtx(\rt,\vbal,\inputs',\outputs')$,
+over the randomness of the oracles \RO and \KDF, and the inner randomness of the signer, SNARK prover and the \makerandomizedtx method,
+are not identical and independent
 \end{itemize}
 is \negl.
 
@@ -1117,14 +1120,21 @@ $\sig_1,\ldots,\sig_\ell$ are independent from each other, depend on \inps and t
 
 
 $\inp_j$ has the form
-\[\inp_j = (\nf,\rt,\rk\cv,\prf)\]
+\[\inp_j = (\nf,\rt,\rk,\cv,\prf)\]
 
-We show that the distribution of each element in $\inp_j$, conditioned on the previous elements depends only on the value of the previous elements together with $\rt,\vbal$.
-We also show for each element that its distribution is independent of that of the same element in $D'$
+We show that except w.p. \negl, any corresponding elements in $\inp_j$ and $\inp'_j$ are distributed identically conditioned on fixing to an identical value of the previous elements.
+%We also show for each element that its distribution is independent of that of the same element in $D'$
  
  Such an element $\inp=(\nf,\rt,\rk,\cv,\prf)$
  \begin{itemize}
-  \item  $\nf = \NF(\nk,\cm,\pos)$. This is a random oracle value, depending only on the randomness of \NF. It is independent of $\nf'$ which is a value of 
+  \item  $\nf = \NF(\nk,\cm,\pos)=\RO(\nk,\MPH(\note,\pos))$ and $\nf'=\RO(\nk',\MPH(\note,\pos)$. As $(\note,\pos)$ and $(\note',\pos')$ are distinct, there are outputs of \RO on distinct inputs, and thus are both uniform and independet from each other; \emph{unless} $\MPH(\note,\pos) = \MPH(\note',\pos')$, but \adv can only find
+  such $(\note,\pos),(\note',\pos')$ with probability \negl.
+  \item $\rt=\rt'$.
+  \item $\rk=\ak + \alpha\cdot \g$, $\rk' = \alpha' + \cdot \g$. Are independent and both uniform in \G because of the uniform choice of $\alpha$ in \makerandomizedtx.
+  \item $\cv=\val\cdot \gv + \rcv\cdot \gr$,$\cv'=\val'\cdot \gv' + \rcv'\cdot \gr'$. Are uniform in \G and independent of each other because of the uniform and independent choices of $\rcv,\rcv'\in \F$ in the executions of \makerandomizedtx.
+  \item $\prf,\prf'$ - Assuming  $(\nf,\rt,\rk,\cv)=(\nf',\rt',\rk',\cv')$, it follows from the witness indistinguishability of the SNARK
+  a random oracle value, depending only on the randomness of \NF. It is independent of $\nf'$ which is a value of 
+  
   $\NF$ on a distinct input because $\pos_j\neq \pos'_j$.
   
   

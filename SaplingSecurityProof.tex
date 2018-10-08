@@ -592,6 +592,7 @@ Furthermore, \ext's running time will be $P(\lambda)$ where $P$ is a polynomial 
 \newcommand{\createaddr}{\ensuremath{\mathsf{createaddr}}\xspace}
 \newcommand{\makeinput}{\ensuremath{\mathsf{makeinput}}\xspace}
 \newcommand{\makeoutput}{\ensuremath{\mathsf{makeoutput}}\xspace}
+\newcommand{\makerandomizedoutput}{\ensuremath{\mathsf{makerandomizedoutput}}\xspace}
 \newcommand{\makeoutputandnote}{\ensuremath{\mathsf{makeoutputandnote}}\xspace}
 \newcommand{\maketx}{\ensuremath{\mathsf{maketx}}\xspace}
 \newcommand{\makerandomizedtx}{\ensuremath{\mathsf{makerandomizedtx}}\xspace}
@@ -612,7 +613,7 @@ Furthermore, \ext's running time will be $P(\lambda)$ where $P$ is a polynomial 
 % \newcommand{\pk}{\ensuremath{\mathsf{pk}}\xspace}
 \newcommand{\rawtx}{\ensuremath{\mathsf{raw_{tx}}}\xspace}
 \newcommand{\pretx}{\ensuremath{\mathsf{pre\mhyphen tx}}\xspace}
-\newcommand{\sigval}{\ensuremath{\sigma_{\mathsf{val}}}\xspace}
+\newcommand{\sigval}{\ensuremath{\sigma_{\mathsf{bind}}}\xspace}
 \newcommand{\rcvs}{\ensuremath{\overrightarrow{\mathsf{rcv}}}\xspace}
 \newcommand{\rcms}{\ensuremath{\overrightarrow{\mathsf{rcm}}}\xspace}
 \newcommand{\pak}{\ensuremath{\mathsf{pak}}\xspace}
@@ -761,7 +762,7 @@ where $\pak=(\ak,\nsk)
 \pk,\val,\rcm)$
 \begin{enumerate}
 \item \cm = \notecom(\note)
- \item \nf = \NF(\cm,\nk,\pos)
+ \item \nf = \NF(\nk,\cm,\pos)
  \item Define $\rk\defeq \ak +\alpha\cdot \g, \cv\defeq  \val\cdot \gv+ \rcv\cdot \gr $.
  \item Let $\prf = \provspend(\cv,\rt,\nf,\rk;\note,\pak,\alpha,\path,\pos)$.
  \item Output $(\cv,\rt,\nf,\rk,\pi)$.
@@ -774,20 +775,21 @@ where $\pak=(\ak,\nsk)
  \item Let $\cv\defeq \valcom(\val,\rcv) = \val\cdot \gv + \rcv\cdot \gr$.
  \item Let $\note = (\gd,\pk,\val,\rcm)$ and $\cm\defeq \notecom(\note)$.
  \item Let $\epk = \esk\cdot \gd$.
- \item Let $\noteenc = \symencrypt{\esk\cdot \gd}{\note}$
+ \item Let $\noteenc = \symencrypt{\KDF(\esk\cdot \gd)}{\note}$
  \item Let $\prf = \provoutput(\epk,\cm,\cv;\note,\rcv,\esk)$.
  \item Output $(\cv,\cm,\epk,\prf,\noteenc)$
 \end{enumerate}
-% \underline{\makeoutputandnote(\gd,\pk,\val)},
-% \begin{enumerate}
-%  \item Choose random $\rcm,\rcv,\esk\in \F$.
-%  \item Let $\cv\defeq \val\cdot \gv + \rcm\cdot \gr$.
-%  \item Let $\note = (\gd,\pk,\val,\rcm)$ and $\cm\defeq \notecom(\note)$.
-%  \item Let $\epk = \esk\cdot \gd$.
-%  \item Let $\noteenc = \symencrypt{\esk\cdot \gd}{\note}$
-%  \item Let $\prf = \provoutput(\epk,\cm,\cv;\note,\rcv,\esk)$.
-%  \item Let $\note \defeq (\gd,\pk,\val,\rcm)$. Output $(\cv,\cm,\epk,\prf,\noteenc,\note)$
-% \end{enumerate}
+\noindent
+\underline{\makerandomizedoutput(\note=(\gd,\pk,\val),\rcv)},
+\begin{enumerate}
+ \item Choose random $\esk,\rcm\in \F$.
+ \item Let $\cv\defeq \valcom(\val,\rcv) = \val\cdot \gv + \rcv\cdot \gr$.
+ \item Let $\note = (\gd,\pk,\val,\rcm)$ and $\cm\defeq \notecom(\note)$.
+ \item Let $\epk = \esk\cdot \gd$.
+ \item Let $\noteenc = \symencrypt{\KDF(\esk\cdot \pk)}{\note}$
+ \item Let $\prf = \provoutput(\epk,\cm,\cv;\note,\rcv,\esk)$.
+ \item Output $(\cv,\cm,\epk,\prf,\noteenc)$
+\end{enumerate}
 \noindent
 \underline{\bindvaltx(\rawtx=(\inps,\outs,\vbal),\rcvs)}
 
@@ -812,21 +814,21 @@ Given $(\rt,\vbal)$ we say $(\inputs,\outputs)$ is \emph{consistent} with $\rt,\
 if
 \begin{itemize}
  \item for each $j\in [\ell]$ $\input_j$ contains a path \jof{\pak} from $\notecom(\note_j)$ to \rt,
- \item $\sum_{j=1}^{\ell} \val_j-\sum_{j=\ell+1}^{s} \val_j=0$.
+ \item $\sum_{j=1}^{\ell} \val_j-\sum_{j=\ell+1}^{\ell+s} \val_j=\vbal$.
  \item the positions \sett{\pos_j}{j\in [\ell]} are all distinct.
 \end{itemize}
 
 
-and
+and \\
 \noindent
 \underline{\makerandomizedtx(\rt,\vbal,\inputs,\outputs)}
 
 \noindent
 where $\input_j = (\note_j,\pak_j,\path_j,\pos_j), \output_j =(\gd_j,\pk_j,\val_j)$
 \begin{enumerate}
- \item Choose random $\rcms,\rcvs\in \F^s$.
+ \item Choose random $\rcvs\in \F^s$.
  \item For $j\in [\ell]$, $\inp_j = \makeinput(\rt,\input_j,\rcv_j)$
- \item For $j\in [s]$, $\out_j=\makeoutput(\output_j,\rcm_j,\rcv_j)$
+ \item For $j\in [s]$, $\out_j=\makeoutput(\output_j,\rcv_j)$
  \item $\pretx = \bindvaltx(\inps,\outs,\vbal)$.
  \item Choose random $\alphas\in \F^{\ell}$.
  \item Output $\tx = \signtx{\pretx,\ask,\alphas}$
@@ -1076,7 +1078,27 @@ Reduce to Claim \ref{clm:nmal-sapling}.
 We
 \end{proof}
 \subsection{Indistinguishability w.r.t outside adversaries}
-\begin{claim}\label{clm:indist-sapling}
+Let us say that random variables $X,Y$ are $\gamma$-close to independent if for
+any events $A,B$
+\[|\pr(X\in A \wedge Y\in B)-\pr(X\in A)\cdot \pr(Y\in B)|\leq \gamma.\]
+
+
+A simple calculation proves
+\begin{claim}\label{clm:close_to_ind}
+ Suppose $X=(X_1,X_2), Y=(Y_1,Y_2)$ are such that 
+ \begin{itemize}
+ \item $X_1$ and $Y_1$ are independent.
+  \item 
+ e.w.p $\gamma$ over the value $x_1,y_1$ of $X_1,Y_1$, $(X|X_1=x_1), (Y|Y_1 = y_1)$ are independent,
+ then $X,Y$ are $\gamma$-close to independent.
+ \end{itemize}
+
+ \end{claim}
+
+
+
+
+\begin{thm}\label{thm:indist-sapling}
 % Fix any efficient \adv.
 % Suppose that \adv interacts with \oracle as described above.
 % Then \adv outputs $\ell,s,\inputs,\outputs,\inputs',\outputs', |\inputs|=|\inputs'|=\ell,|\outputs|=|\outputs'|=s$.
@@ -1087,7 +1109,7 @@ Fix any $(\inputs,\outputs)$ that is consistent with $\rt,\vbal$.
 Assume that 
 \begin{enumerate}
  \item 
-$\NF(\nk,\notecom(\note),\pos)= \RO(\nk,\MPH(\note,\pos))$ where \RO is a random oracle and \MPH is a collision-resistant function\footnote{The requirement here may seem a bit odd; it models the fact the $\notecom(\note)$ is a pedersen hash which is combined in \NF with a $\pos$-multiple of an independent group generator, followed by an application of BLAKE-2 on the result prefixed with \nk. In particular, BLAKKE-2 takes the place of \RO in the impelmentation.}
+$\NF(\nk,\notecom(\note),\pos)= \RO(\nk,\MPH(\note,\pos))$ where \RO is a random oracle and \MPH is a collision-resistant function\footnote{The requirement here may seem a bit odd; it models the fact the $\notecom(\note)$ is a pedersen hash which is combined in \NF with a $\pos$-multiple of an independent group generator, followed by an application of BLAKE-2 on the result prefixed with \nk. In particular, BLAKE-2 takes the place of \RO in the impelmentation.}
 
 \item
 \KDF is also a random oracle.
@@ -1111,10 +1133,84 @@ are not identical and independent
 \end{itemize}
 is \negl.
 
+\end{thm}
+Let us denote by $(\inps,\outs,\sigval,\sigs)$ the output of $\makerandomizedtx(\rt,\vbal,\inputs,\outputs$
+and by $(\inps',\outs',\sigval',\sigs')$ the output of $\makerandomizedtx(\rt,\vbal,\inputs',\outputs')$
+when using independent inner randomness, but joint randomness for the oracles $\RO,\KDF$.
+
+We first note that
+\begin{claim}\label{clm:ind_of_inputs}
+Except with probability \negl, over the randomness of \adv,
+ $\inp_1,\ldots,\inp_\ell,\out_1,\ldots,\out_s,\inp'_1,\ldots,\inp'_\ell,\out'_1,\ldots,\out'_s$ are \negl-close to independent random variables.
+\end{claim}
+
+\begin{proof}
+$\inp_1,\ldots,\inp_\ell,\inp'_1,\ldots,\inp'_\ell$
+are results of invocations of \makeinput with independent randomness
+$\rcv,\alpha$ and independent randomness of the SNARK prover.
+$\out_1,\ldots,\out_s,\out'_1,\ldots,\out'_s$ are outputs of invocations of \makerandomizedoutput with
+independent randomness $\esk,\rcm,\rcv$ and independent randomness of the SNARK prover.
+Inspection shows the only oppurtunity for dependence is having 
+the random oracles \KDF and \RO queried at the same point during different invocations.
+We argue the probability for this is \negl:
+\begin{enumerate}
+ \item \RO will have a repeated query during computing of \nf, iff for some $i\neq j\in [\ell]$ 
+ $(\nk_i,\MPH(\note_i,\pos_i)) =(\nk_j,\MPH(\note_j,\pos_j))$.
+ As the notes are distinct, this would require finding a collision of \MPH.
+ \item \KDF will have a repeated query iff for some $i\neq j \in [s]$
+ $\esk_i\cdot \pk_i = \esk_j \cdot \pk_j$; this happens with \negl probability as \esk is chosen independently for
+ each output.
+\end{enumerate}
+
+\end{proof}
+
+We know show that corresponding inputs and outputs are independent and identically distributed except w.p \negl.
+
+\begin{claim}\label{clm:inps-outs-areind}
+E.w.p \negl
+ \begin{itemize}
+  \item For $j\in [\ell]$ $\inp_j$ and $\inp'_j$ are identically distributed and independent.
+  \item For $j\in [s]$, $\out_s$ and $\out'_s$ are identically distributed and \negl-close to independent.
+ \end{itemize}
+
 \end{claim}
 \begin{proof}
-The output of \makerandomizedtx is of the form $(\inps,\outs,\sigs)$.
-$\inp_1,\ldots,\inp_\ell, \out_1,\ldots,\out_s$ are all independent from each other. (Here we use that \set{\pos_j} are all different and thus \set{\nf_j}
+ The first item:
+We show that except w.p. \negl, any corresponding elements in $\inp =\inp_j$ and $\inp' = \inp'_j$ are distributed identically conditioned on fixing to an identical value of the previous elements, and independent conditioned on any fixed of previous elements.
+ 
+ Suppose $\inp=(\nf',\rt',\rk',\cv',\prf)$', and $\inp=(\nf',\rt',\rk',\cv',\prf')$.
+ \begin{itemize}
+  \item  $\nf = \NF(\nk,\cm,\pos)=\RO(\nk,\MPH(\note,\pos))$ and $\nf'=\RO(\nk',\MPH(\note,\pos)$. As $(\note,\pos)$ and $(\note',\pos')$ are distinct, there are outputs of \RO on distinct inputs, and thus are both uniform and independet from each other; \emph{unless} $\MPH(\note,\pos) = \MPH(\note',\pos')$, but \adv can only find
+  such $(\note,\pos),(\note',\pos')$ with probability \negl.
+  \item $\rt=\rt'$.
+  \item $\rk=\ak + \alpha\cdot \g$, $\rk' = \alpha' + \cdot \g$. Are independent and both uniform in \G because of the uniform choice of $\alpha,\alpha'$ in \makerandomizedtx.
+  \item $\cv=\val\cdot \gv + \rcv\cdot \gr$,$\cv'=\val'\cdot \gv' + \rcv'\cdot \gr'$. Are uniform in \G and independent of each other because of the uniform and independent choices of $\rcv,\rcv'\in \F$ in the executions of \makerandomizedtx.
+  \item $\prf,\prf'$ - When  $(\nf,\rt,\rk,\cv)=(\nf',\rt',\rk',\cv')$, it follows from the witness indistinguishability of the SNARK
+  that $\prf$ and $\prf'$ are identically distributed. They are independent for any fixing of the previous values, as given this fixing the value
+  of $\prf,\prf'$ depends only on the inner randomness of the SNARK prover.
+ \end{itemize}
+ We show the same for corresponding elements $\out=\out_j$ and $\out'=\out'_j$.
+ Suppose $\out=(\cv,\epk,\prf,\noteenc)$, and $\out=(\cv',\epk',\prf',\noteenc')$ 
+ \begin{itemize}
+  \item $\cv=\val\cdot \gv + \rcv\cdot \gr,\cv'=\val'\cdot \gv + \rcv'\cdot \gr$: are independent and uniform in \G because of the independent uniform choices of $\rcv,\rcv'\in \F$ in \makerandomizedtx.
+  \item $\cm = \notecom(\gd,\pk,\val,\rcm)$,$\cm' = \notecom(\gd',\pk',\val',\rcm')$: are uniform and independent in \G because of the independent uniform choices of $\rcm,\rcm'\in \F$ in \makerandomizedoutput.
+  \item $\epk=\esk\cdot \gd,\epk'=\esk'\cdot \gd$ are uniform and independent in \G because of the independent and uniform choices of $\esk,\esk'\in \F$ in \makerandomizedoutput.
+  \item $\prf,\prf'$ - Assuming the pubic inputs $(\epk,\cm,\cv)=(\epk',\cm',\cv')$, it follows from the witness indistinguishability of the SNARK
+  that $\prf$ and $\prf'$ are identically distributed. They are independent for any fixing of the previous values, as given this fixing the value
+  of $\prf,\prf'$ depends only on the inner randomness of the SNARK prover.
+  \item $\noteenc = \symencrypt{\KDF(\esk\cdot\pk)}{(\gd,\pk,\val)}$,$\noteenc' = \symencrypt{\KDF(\esk'\cdot\pk')}{(\gd',\pk',\val')}$:
+ Assuming $\esk\cdot \pk\neq \esk'\cdot \pk'$, we have that the encryption keys $\KDF(\esk\cdot\pk),\KDF(\esk'\cdot\pk')$ are uniform and independent.
+ And thus by the theorem's assumption $\noteenc,\noteenc'$ are uniform and independent in this case. This is not the case only when the previous elements
+ $\epk,\epk'$ imply $\esk=\esk'$ which happens w.p $1/|\F| = \negl$.
+  \end{itemize}
+\end{proof}
+
+
+
+
+\begin{proof} (of Theorem \ref{thm:indist-sapling})
+Note that 
+% $\inp_1,\ldots,\inp_\ell, \out_1,\ldots,\out_s$ are all independent from each other. (Here we use that \set{\pos_j} are all different and thus \set{\nf_j}
 are independent values of the random oracle \NF at distinct inputs).
 $\sig_1,\ldots,\sig_\ell$ are independent from each other, depend on \inps and the inner randomness of the signer.
 
@@ -1122,41 +1218,8 @@ $\sig_1,\ldots,\sig_\ell$ are independent from each other, depend on \inps and t
 $\inp_j$ has the form
 \[\inp_j = (\nf,\rt,\rk,\cv,\prf)\]
 
-We show that except w.p. \negl, any corresponding elements in $\inp_j$ and $\inp'_j$ are distributed identically conditioned on fixing to an identical value of the previous elements.
-%We also show for each element that its distribution is independent of that of the same element in $D'$
- 
- Such an element $\inp=(\nf,\rt,\rk,\cv,\prf)$
- \begin{itemize}
-  \item  $\nf = \NF(\nk,\cm,\pos)=\RO(\nk,\MPH(\note,\pos))$ and $\nf'=\RO(\nk',\MPH(\note,\pos)$. As $(\note,\pos)$ and $(\note',\pos')$ are distinct, there are outputs of \RO on distinct inputs, and thus are both uniform and independet from each other; \emph{unless} $\MPH(\note,\pos) = \MPH(\note',\pos')$, but \adv can only find
-  such $(\note,\pos),(\note',\pos')$ with probability \negl.
-  \item $\rt=\rt'$.
-  \item $\rk=\ak + \alpha\cdot \g$, $\rk' = \alpha' + \cdot \g$. Are independent and both uniform in \G because of the uniform choice of $\alpha$ in \makerandomizedtx.
-  \item $\cv=\val\cdot \gv + \rcv\cdot \gr$,$\cv'=\val'\cdot \gv' + \rcv'\cdot \gr'$. Are uniform in \G and independent of each other because of the uniform and independent choices of $\rcv,\rcv'\in \F$ in the executions of \makerandomizedtx.
-  \item $\prf,\prf'$ - Assuming  $(\nf,\rt,\rk,\cv)=(\nf',\rt',\rk',\cv')$, it follows from the witness indistinguishability of the SNARK
-  a random oracle value, depending only on the randomness of \NF. It is independent of $\nf'$ which is a value of 
   
-  $\NF$ on a distinct input because $\pos_j\neq \pos'_j$.
-  
-  
- \nk is common randomness, if NF random oracle then \nf s are uniform and independet.
- \item \rt: Assume same in all inputs?
- \item \rk: uniform and independent for each \inp, assuming $\alpha$ is uniform
- \item  \cv: uniform and independent for each \inp, assuming $\rcv$ is uniform.
- \item \prf: Given same fixing of previous elements same distribution
- \end{itemize}
 
- An output element $\out=(\cv,\epk,\prf,\noteenc)$
- \begin{itemize}
-  \item $\cv=\val\cdot \gv + \rcv\cdot \gr$: unif and independent given that \rcv is
-  \item $\cm = \notecom(\gd,\pk,\val,\rcm)$: unif and independent given that \rcm is.
-  \item $\epk=\esk\cdot \gd $ uniform and independent given that \esk is.
-  \item from ZK property the same as \dist of \prf can be simulated given previous vals.
- \item $\noteenc = \symencrypt{\esk\cdot\pk}{(\gd,\pk,\val)}$: Wanna say dist of \noteenc given fixed prev values is indist from
- encryption under random key $K$. Suppose can distinguish between random key $K$ and $\esk\cdot\pk$, given $\gd,\epk=\esk\cdot\gd,\pk$. Same as solving DDH with $\gd = g, \esk\cdot \gd = a\cdot g,\pk =b\cdot g$. But if can distinguish between this encryption and one with a random $K$ can build DDH adversary that gets challenge $(g,a\cdot g,b\cdot g, K)$, plays role of \oracle with \adv and returns $(g,b\cdot g)$
- as one of addresses $(\gd,\pk)$, uses $a$ as \esk ...to complete - easier when talking about simulator of $M$ rather than distinguishing between $M_1$ and $M_2$ cause then simulator encodes with random key $K$, and distinguisher against simulator can be used to break DDH.
- 
-%   \item $\esk
-  \end{itemize}
 the signature \sigval: can be simulating by a signing oracle except w.p. \negl (get's ruined if \RO was already queried on point)
 the signatures \sigs: same.
 \end{proof}

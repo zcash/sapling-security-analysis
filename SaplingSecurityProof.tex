@@ -162,6 +162,15 @@ Sapling Security Proof}
  \newcommand{\comm}[1]{\ensuremath{\mathsf{comm}_{#1}}\xspace}
  \newcommand{\defeq}{:=}
 
+%\renewcommand{\prime}[1]{\ensuremath{#1'}\xspace}
+\newcommand{\inpwitness}{\ensuremath{\mathsf{inpwit}}\xspace}
+\newcommand{\inpnote}{\ensuremath{\mathsf{inpnote}}\xspace}
+\newcommand{\posnote}{\ensuremath{\mathsf{posnote}}\xspace}
+\newcommand{\inpnotes}{\ensuremath{{\mathcal{I}}}\xspace}
+\newcommand{\outnotes}{\ensuremath{{\mathcal{O}}}\xspace}
+\newcommand{\outwitness}{\ensuremath{\mathsf{outwit}}\xspace}
+\newcommand{\outnote}{\ensuremath{\mathsf{outnote}}\xspace}
+\newcommand{\treehash}{\ensuremath{\mathsf{treehash}}\xspace}
 \newcommand{\A}{\ensuremath{\vec{A}}\xspace}
 \newcommand{\B}{\ensuremath{\vec{B}}\xspace}
 \newcommand{\C}{\ensuremath{\vec{C}}\xspace}
@@ -261,6 +270,7 @@ Sapling Security Proof}
 \newcommand{\pk}{\ensuremath{\mathsf{pk}}\xspace}
 \newcommand{\sigquer}{\ensuremath{\mathsf{q^\sigma}}\xspace}
 \newcommand{\RO}{\ensuremath{\mathcal R}\xspace}
+\newcommand{\ROsig}{\ensuremath{\mathcal R_{sig}}\xspace}
 \newcommand{\sig}{\ensuremath{\sigma}\xspace}
 \newcommand{\sign}{\ensuremath{\mathsf{sign}}\xspace}
 \newcommand{\versig}{\ensuremath{\mathsf{verifySig}}\xspace}
@@ -706,7 +716,7 @@ I know $\path,\pos,\note=(\gd,\pk,\val,\rcm),\cm,\rcv,\alpha,\ak,\nsk$ such that
  \item $\cm = \notecom(\note)$.
  \item Either $\val=0$ (``dummy note''); or \path is a merkle path from \cm at position \pos to \rt.
  \item $\rk = \ak + \alpha \cdot \gsig$.
- \item Setting $\nk \defeq \nsk\cdot \gnk, \ivk \defeq \IVK(\ak,\nk)$, we have $\pk=\ivk\cdot \gd$.
+ \item Setting $\nk \defeq \nsk\cdot \gnk, \ivk \defeq \IVK(\ak,\nk)$; we have $\pk=\ivk\cdot \gd$.
  \item $\nf = \NF(\nk,\cm,\pos)$
 \end{enumerate}
 
@@ -718,6 +728,7 @@ A \emph{note} is a tupple $\note = (\gd,\pk,\val,\rcm)$ where
  \item $\val \leq \MAXVAL$.
 \end{enumerate}
 
+An \emph{output base} $\output=(\gd,\pk,\val)$ is the same as a note excluding the \rcm component.
 \begin{remark}
  It is convenient for us to define a note with \gd rather than its \GH-preimage \d as in the spec, as this is what's given as input to the circuits; there are minor non-expoitable issues with this, see e.g. https://github.com/zcash/zcash/issues/3490.
 \end{remark}
@@ -729,13 +740,15 @@ For $\ivk \in \F$ we say \note \emph{belongs to \ivk} if $\pk =\ivk \cdot \g$.\\
 
 
 
-An \emph{input base}, usually denoted \input, will consist of the values required to make an input in a Sapling transaction, except the spending and proving key; namely $\input = (\note,\path,\pos)$ where
+An \emph{input base}, usually denoted \input, will consist of the values required to make an input in a Sapling transaction, except the spending key; namely $\input = (\note,\path,\pos,\pak)$ where
 \begin{itemize}
  \item \note is a note
  \item \path is a path in a merkle tree beginning from a leaf of value $\cm=\notecom(\note)$.
  \item \pos is the position of \cm amongst the leaves of the Merkle tree (\pos is redundant here as it can be derived from \path, but convenient).
+ \item \pak is a proving key to make SNARK spend proofs about the note.
 \end{itemize}
 
+We say \input is \emph{consistent with \rt} if \path ends at \rt.
 
 A \emph{transaction input}, usually denoted \inp, is the final form an input appears in a transaction; \inp consists of 
 \begin{enumerate}
@@ -747,19 +760,15 @@ A \emph{transaction input}, usually denoted \inp, is the final form an input app
 \end{enumerate}
 
 
-We make the simplifying assumption in this writeup; that \emph{there is only one spending key $(\ask,\nsk)$ involved, and all addresses are diversifed addresses derived from this spending key}.
-% For the indistinguishability property, we make the simplifying assumption that the Merkle tree used is always the one consisting of all ledger transaction up to the point of the new transaction (whereas in reality, one might prefer to use a somewhat older tree to protect against the possiblity of block reorgs. Thus in practice there may be some leakage about the input note's ``age'' that is not captured here).
-
 \subsection{Methods}
 
 We use the convention that $\ell$ denotes the number of inputs in a transaction, and $s$ the number of outputs.
 
 \noindent
-\underline{$\makeinput(\rt,\input=(\note,\path,\pos),\pak,\rcv,\alpha)$}
+\underline{$\makeinput(\rt,\input=(\note,\path,\pos,\pak),\rcv,\alpha)$}
 
-where $\pak=(\ak,\nsk)
-,\note=(\gd,
-\pk,\val,\rcm)$
+where \input is an input base consistent with \rt.
+
 \begin{enumerate}
 \item \cm = \notecom(\note)
  \item \nf = \NF(\nk,\cm,\pos)
@@ -813,7 +822,7 @@ Given $(\rt,\vbal)$ we say $(\inputs,\outputs)$ is \emph{consistent} with $\rt,\
 
 if
 \begin{itemize}
- \item for each $j\in [\ell]$ $\input_j$ contains a path \jof{\pak} from $\notecom(\note_j)$ to \rt,
+ \item for each $j\in [\ell]$ $\input_j$ is consistient with \rt, i.e. \jof{\pak} is from $\notecom(\note_j)$ to \rt,
  \item $\sum_{j=1}^{\ell} \val_j-\sum_{j=\ell+1}^{\ell+s} \val_j=\vbal$.
  \item the positions \sett{\pos_j}{j\in [\ell]} are all distinct.
 \end{itemize}
@@ -871,6 +880,8 @@ where $\input_j = (\val_j,\note_j,\pak_j,\path_j,\pos_j), \output_j =(\gd_j,\pk_
 
 \section{Non-Malleability of Sapling w.r.t. delegated spenders}
 
+
+We make the simplifying assumption when modelling non-malleability in this writeup; that \emph{there is only one spending key $(\ask,\nsk)$ of the honest signer  involved, and all addresses are diversifed addresses derived from this spending key}.
 \subsection*{Modelling the adversary:}
 We wish to show that the delegated spender cannot create any new transactions of her own.
 We model this claim with the following non-malleability game:
@@ -1083,16 +1094,25 @@ any events $A,B$
 \[|\pr(X\in A \wedge Y\in B)-\pr(X\in A)\cdot \pr(Y\in B)|\leq \gamma.\]
 
 
-A simple calculation proves
+A calculation proves
 \begin{claim}\label{clm:close_to_ind}
  Suppose $X=(X_1,X_2), Y=(Y_1,Y_2)$ are such that 
  \begin{itemize}
- \item $X_1$ and $Y_1$ are independent.
+ \item $X_1$ and $Y_1$ are $\gamma_1$-independent.
   \item 
- e.w.p $\gamma$ over the value $x_1,y_1$ of $X_1,Y_1$, $(X|X_1=x_1), (Y|Y_1 = y_1)$ are independent,
- then $X,Y$ are $\gamma$-close to independent.
+ e.w.p $\gamma_2$ over the value $(x_1,y_1)$ of $(X_1,Y_1)$, $(X|X_1=x_1), (Y|Y_1 = y_1)$ are $\gamma_3$-independent,
  \end{itemize}
 
+ then $X,Y$ are $\gamma_1+\gamma_2+\gamma_3$-close to independent.
+ \end{claim}
+
+ Induction then shows that
+ \begin{claim}\label{clm:neg_close_to_ind}
+  Suppose $t=\poly$. Suppose random variables $X=(X_1,\ldots,X_t),Y=(Y_1,\ldots,Y_t)$ are such that
+  for any $i\in [n]$, e.w.p \negl over the value $(x_1,\ldots,x_{i-1},y_1,\ldots,y_{i-1})$ of $(X_1,\ldots,X_{i-1},Y_{1},\ldots,Y_{i-1})$
+  $(X_i|(X_1,\ldots,X_{i-1})=(x_1,\ldots,x_{i-1}))$ and $(Y_i|(Y_1,\ldots,Y_{i-1})=(y_1,\ldots,y_{i-1}))$ are \negl-close to independent.
+  
+  Then $X,Y$ are \negl-close to independent.
  \end{claim}
 
 
@@ -1128,7 +1148,7 @@ $|\inputs|=|\inputs'| = \ell$, $|\outputs|=|\outputs'| =s $.
 \item The distributions of the random variables $D\defeq \makerandomizedtx(\rt,\vbal,\inputs,\outputs)$ and 
 
 $D'\defeq \makerandomizedtx(\rt,\vbal,\inputs',\outputs')$,
-over the randomness of the oracles \RO and \KDF, and the inner randomness of the signer, SNARK prover and the \makerandomizedtx method,
+over the randomness of the oracles \RO,\KDF and \ROsig of the signing algorithm, and the inner randomness of the signer, SNARK prover and the \makerandomizedtx method,
 are not identical and independent
 \end{itemize}
 is \negl.
@@ -1137,13 +1157,6 @@ is \negl.
 Let us denote by $(\inps,\outs,\sigval,\sigs)$ the output of $\makerandomizedtx(\rt,\vbal,\inputs,\outputs$
 and by $(\inps',\outs',\sigval',\sigs')$ the output of $\makerandomizedtx(\rt,\vbal,\inputs',\outputs')$
 when using independent inner randomness, but joint randomness for the oracles $\RO,\KDF$.
-
-We first note that
-\begin{claim}\label{clm:ind_of_inputs}
-Except with probability \negl, over the randomness of \adv,
- $\inp_1,\ldots,\inp_\ell,\out_1,\ldots,\out_s,\inp'_1,\ldots,\inp'_\ell,\out'_1,\ldots,\out'_s$ are \negl-close to independent random variables.
-\end{claim}
-
 \begin{proof}
 $\inp_1,\ldots,\inp_\ell,\inp'_1,\ldots,\inp'_\ell$
 are results of invocations of \makeinput with independent randomness
@@ -1166,17 +1179,21 @@ We argue the probability for this is \negl:
 
 We know show that corresponding inputs and outputs are independent and identically distributed except w.p \negl.
 
-\begin{claim}\label{clm:inps-outs-areind}
-E.w.p \negl
- \begin{itemize}
-  \item For $j\in [\ell]$ $\inp_j$ and $\inp'_j$ are identically distributed and independent.
-  \item For $j\in [s]$, $\out_s$ and $\out'_s$ are identically distributed and \negl-close to independent.
- \end{itemize}
+\begin{claim}\label{clm:inps-areind}
+The probability of an efficient \adv finding input bases \input,\input' containing distinct positioned notes consistent with \rt such that, denoting by $\inp,\inp'$ the random variables 
+\begin{itemize}
+ \item 
+$\inp = \makeinput(\rt,\input,\alpha,\rcv)$ for uniform $\alpha,\rcv \in \F$
+\item
+$\inp' = \makeinput(\rt,\input',\alpha',\rcv')$ for uniform $\alpha',\rcv' \in \F$
+\end{itemize}
+they are not identically distributed and \negl-close to independent;
+is \negl.
 
 \end{claim}
 \begin{proof}
- The first item:
-We show that except w.p. \negl, any corresponding elements in $\inp =\inp_j$ and $\inp' = \inp'_j$ are distributed identically conditioned on fixing to an identical value of the previous elements, and independent conditioned on any fixed of previous elements.
+%The first item:
+We show that except w.p. \negl over the randomness of \adv, any corresponding elements in $\inp,\inp'$ are distributed identically conditioned on fixing to an identical value of the previous elements, and independent conditioned on any fixed of previous elements.
  
  Suppose $\inp=(\nf',\rt',\rk',\cv',\prf)$', and $\inp=(\nf',\rt',\rk',\cv',\prf')$.
  \begin{itemize}
@@ -1189,8 +1206,25 @@ We show that except w.p. \negl, any corresponding elements in $\inp =\inp_j$ and
   that $\prf$ and $\prf'$ are identically distributed. They are independent for any fixing of the previous values, as given this fixing the value
   of $\prf,\prf'$ depends only on the inner randomness of the SNARK prover.
  \end{itemize}
- We show the same for corresponding elements $\out=\out_j$ and $\out'=\out'_j$.
- Suppose $\out=(\cv,\epk,\prf,\noteenc)$, and $\out=(\cv',\epk',\prf',\noteenc')$ 
+ 
+\end{proof} 
+\newcommand{\primeof}[1]{\ensuremath{#1 '}\xspace} 
+ We show a similar statement for outputs. 
+\begin{claim}\label{clm:outs-areind}
+For any output bases \output,\primeof{\output}, denoting by $\out,\out'$ the random variables 
+\begin{itemize}
+ \item 
+$\out = \makerandomizedoutput(\output,\rcv)$ for uniform $\rcv \in \F$
+\item
+$\out' = \makerandomizedoutput(\output',\rcv')$ for uniform $\rcv' \in \F$
+\end{itemize}
+\out and $\out'$ are identically distributed and \negl-close to independent.
+
+\end{claim}
+\begin{proof}
+Suppose $\out=(\cv,\epk,\prf,\noteenc)$, and $\out'=(\cv',\epk',\prf',\noteenc')$ 
+We show that except w.p. \negl over the randomness of \adv, any corresponding elements in $\inp,\inp'$ are distributed identically conditioned on fixing to an identical value of the previous elements, and independent conditioned on any fixed of previous elements, except for the last elements $\noteenc,\noteenc'$ where w.p. \negl the fixing of previous elements will create a dependence between \noteenc and $\noteenc'$.
+The claim then follows from Claim \ref{clm:close_to_ind}.
  \begin{itemize}
   \item $\cv=\val\cdot \gv + \rcv\cdot \gr,\cv'=\val'\cdot \gv + \rcv'\cdot \gr$: are independent and uniform in \G because of the independent uniform choices of $\rcv,\rcv'\in \F$ in \makerandomizedtx.
   \item $\cm = \notecom(\gd,\pk,\val,\rcm)$,$\cm' = \notecom(\gd',\pk',\val',\rcm')$: are uniform and independent in \G because of the independent uniform choices of $\rcm,\rcm'\in \F$ in \makerandomizedoutput.
@@ -1205,6 +1239,37 @@ We show that except w.p. \negl, any corresponding elements in $\inp =\inp_j$ and
   \end{itemize}
 \end{proof}
 
+
+
+Now it's easy to see that
+\begin{claim}\label{clm:ind_of_inputs}
+Except with probability \negl, over the randomness of \adv,
+ $\inp_1,\ldots,\inp_\ell,\out_1,\ldots,\out_s,\inp'_1,\ldots,\inp'_\ell,\out'_1,\ldots,\out'_s$ are \negl-close to independent random variables.
+\end{claim}
+\begin{proof}
+  It follows from the above two claims that any pair of inputs, or pair of outputs are \negl-close to independent.
+  Since there are no colliding random oracle queries between inputs and outputs, the claim follows.
+\end{proof}
+
+
+Denote $\sig_0\defeq \sigval$.
+
+
+\begin{claim}\label{clm:ind_of_sigs}
+For any $i\in [0..\ell]$, and any 
+ Conditioned on any fixing of $\inp_1,\ldots,\inp_\ell,\out_1,\ldots,\out_s,\inp'_1,\ldots,\inp'_\ell,\out'_1,\ldots,\out'_s,\sig_0,\ldots,\sig_{i-1},\sig'_0,\ldots,\sig'_{i-1}$ the values
+ $\set{\sig_i,\sig'_i}$ are \negl-close to independent.
+\end{claim}
+\begin{proof}
+ The distribution of any given $\sig_i$ is of the form $R,u$ where $R\in \G$ is uniformly chosen by the signing algorithm as $a\cdot \gr$,
+ and $u=a+c\cdot \sk$ where $c=\ROsig(R,\pk,\sighash(\rawtx)$.
+ For dependence to be created we would need $R=R`$ which happens with probability $1/|\F|$.
+ More formally, e.w.p $1/|\F|$ over the probability of the values $x,y$ of $\sig_i,\sig'_i$,
+ we have 
+\[\pr(\sig_i=x \wedge \sig'_i =y)=\pr(\sig_i =x)\cdot \pr(\sig'_i =y)\]
+ which means $\sig_i,\sig'_i$ (conditioned on any fixing of all previous variables mentioned in the claim statement) are \negl-close to independent.
+ 
+\end{proof}
 
 
 
@@ -1223,14 +1288,6 @@ $\inp_j$ has the form
 the signature \sigval: can be simulating by a signing oracle except w.p. \negl (get's ruined if \RO was already queried on point)
 the signatures \sigs: same.
 \end{proof}
-\newcommand{\inpwitness}{\ensuremath{\mathsf{inpwit}}\xspace}
-\newcommand{\inpnote}{\ensuremath{\mathsf{inpnote}}\xspace}
-\newcommand{\posnote}{\ensuremath{\mathsf{posnote}}\xspace}
-\newcommand{\inpnotes}{\ensuremath{{\mathcal{I}}}\xspace}
-\newcommand{\outnotes}{\ensuremath{{\mathcal{O}}}\xspace}
-\newcommand{\outwitness}{\ensuremath{\mathsf{outwit}}\xspace}
-\newcommand{\outnote}{\ensuremath{\mathsf{outnote}}\xspace}
-\newcommand{\treehash}{\ensuremath{\mathsf{treehash}}\xspace}
 \subsection{Balance}
 The following claim states an adversary should not be able to create ``money out of thin air'';
 or more specifically, extract more money from the shielded pool than was put in it.
@@ -1371,7 +1428,7 @@ We review note encryption and decryption from the spec in our notation.
 \noindent
 $\underline{\dec(\ivk,\out=(\cv,\cm,\epk,\prf,\noteenc))}$
 \begin{enumerate}
-\item Let $K\defeq \epk\cdot \ivk$
+\item Let $K\defeq \KDF(\epk\cdot \ivk)$
  \item Let $\np=\symdecrypt{K}{\noteenc}$. If \symdecrypt{}{} fails output \rej.
  \item Suppose $\np=(\d,\val,\rcm,\mathsf{memo})$. If $\rcm\geq r$ output \rej. 
 \item Let $\gd\defeq \ghash(\d)$.

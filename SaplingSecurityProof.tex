@@ -784,7 +784,7 @@ where \input is an input base consistent with \rt.
  \item Let $\cv\defeq \valcom(\val,\rcv) = \val\cdot \gv + \rcv\cdot \gr$.
  \item Let $\note = (\gd,\pk,\val,\rcm)$ and $\cm\defeq \notecom(\note)$.
  \item Let $\epk = \esk\cdot \gd$.
- \item Let $\noteenc = \symencrypt{\KDF(\esk\cdot \gd)}{\note}$
+ \item Let $\noteenc = \symencrypt{\KDF(\esk\cdot \pk,\epk)}{\note}$
  \item Let $\prf = \provoutput(\epk,\cm,\cv;\note,\rcv,\esk)$.
  \item Output $(\cv,\cm,\epk,\prf,\noteenc)$
 \end{enumerate}
@@ -795,7 +795,7 @@ where \input is an input base consistent with \rt.
  \item Let $\cv\defeq \valcom(\val,\rcv) = \val\cdot \gv + \rcv\cdot \gr$.
  \item Let $\note = (\gd,\pk,\val,\rcm)$ and $\cm\defeq \notecom(\note)$.
  \item Let $\epk = \esk\cdot \gd$.
- \item Let $\noteenc = \symencrypt{\KDF(\esk\cdot \pk)}{\note}$
+ \item Let $\noteenc = \symencrypt{\KDF(\esk\cdot \pk,\epk)}{\note}$
  \item Let $\prf = \provoutput(\epk,\cm,\cv;\note,\rcv,\esk)$.
  \item Output $(\cv,\cm,\epk,\prf,\noteenc)$
 \end{enumerate}
@@ -1116,6 +1116,12 @@ A calculation proves
  \end{claim}
 
 
+\begin{claim}\label{clm:pairs_to_all}
+ Suppose $t=\poly$. Suppose \set{X_1,\ldots,X_t,X'_1,\ldots,X'_t} is a set of random variables such that
+ they are all identically distributed; and any pair of variables $X,Y$ from the set is \negl-close to independent.
+ Then, defining $X=(X_1,\ldots,X_t), X'=(X'_1,\ldots,X'_t)$, we have that $X,X'$ are \negl-close to independent and 
+ have statistical distance \negl.
+\end{claim}
 
 
 \begin{thm}\label{thm:indist-sapling}
@@ -1209,6 +1215,11 @@ We show that except w.p. \negl over the randomness of \adv, any corresponding el
  
 \end{proof} 
 \newcommand{\primeof}[1]{\ensuremath{#1 '}\xspace} 
+\newcommand{\beforeout}[1]{\ensuremath{D^{\mathsf{out}}_{<#1}}\xspace}
+\newcommand{\beforeoutprime}[1]{\ensuremath{D'^{\mathsf{out}}_{<#1}}\xspace}
+\newcommand{\beforein}[1]{\ensuremath{D_{<#1}}\xspace}
+\newcommand{\beforeinprime}[1]{\ensuremath{D'_{<#1}}\xspace}
+
  We show a similar statement for outputs. 
 \begin{claim}\label{clm:outs-areind}
 For any output bases \output,\primeof{\output}, denoting by $\out,\out'$ the random variables 

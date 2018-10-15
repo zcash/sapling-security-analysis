@@ -1298,6 +1298,15 @@ separate random variable $X_i,X'_i$, and show that
  can prevent \noteenc and \noteenc' from being uniform and independent;
  which is a \negl-fraction of the possible values of the preceding values.
   \end{itemize}
+  
+  
+  It is now left to deal with the signature elements. $\sigval,\sigval',\sett{\sig_i,\sig'_i}$.
+  
+  The distribution of these elements is determined by the public key $\pk=\rk_i$ (or $\pk =S$ the sum of value commitments in the case of \sigval),
+  the message $\msg = \sighash(\rawtx)$ they are signing, the internal randomness of the signing algorithm and the reply of the random oracle 
+  \ROsig on the query point $(R,\pk,\msg)$.
+  Thus, given a fixing of previous variables, the only case where a dependence between $\sig_i$ or $\sig'_i$ could be created is if there
+  as a collision between the signatures in the choice of $R$ which happens w.p. \negl.
 \end{proof}
 
 
@@ -1331,6 +1340,7 @@ For any $i\in [0..\ell]$, and any
  which means $\sig_i,\sig'_i$ (conditioned on any fixing of all previous variables mentioned in the claim statement) are \negl-close to independent.
  
 \end{proof}
+
 
 
 

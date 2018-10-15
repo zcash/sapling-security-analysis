@@ -1139,12 +1139,8 @@ e.w.p \negl over the value $(x_1,\ldots,x_{i-1},y_1,\ldots,y_{i-1})$ of $(X_1,\l
 
 
 \begin{thm}\label{thm:indist-sapling}
-% Fix any efficient \adv.
-% Suppose that \adv interacts with \oracle as described above.
-% Then \adv outputs $\ell,s,\inputs,\outputs,\inputs',\outputs', |\inputs|=|\inputs'|=\ell,|\outputs|=|\outputs'|=s$.
 Fix any $\rt,\vbal$.
 Fix any $(\inputs,\outputs)$ that is consistent with $\rt,\vbal$.
-%Denote by $\disttx(\inputs,\outputs)$ the distribution of $\makerandomizedtx(\rt,\vbal,\inputs,\outputs)$.
 
 Assume that 
 \begin{enumerate}
@@ -1169,15 +1165,25 @@ $|\inputs|=|\inputs'| = \ell$, $|\outputs|=|\outputs'| =s $.
 
 $D'\defeq \makerandomizedtx(\rt,\vbal,\inputs',\outputs')$,
 over the randomness of the oracles \RO,\KDF and \ROsig of the signing algorithm, and the inner randomness of the signer, SNARK prover and the \makerandomizedtx method,
-are not identical and independent
+are not \negl-independent and \negl-independent
 \end{itemize}
 is \negl.
 
 \end{thm}
+\begin{proof}
 Let us denote by $(\inps,\outs,\sigval,\sigs)$ the output of $\makerandomizedtx(\rt,\vbal,\inputs,\outputs$
 and by $(\inps',\outs',\sigval',\sigs')$ the output of $\makerandomizedtx(\rt,\vbal,\inputs',\outputs')$
 when using independent inner randomness, but joint randomness for the oracles $\RO,\KDF$.
-\begin{proof}
+
+We will consider $D$ and $D'$ as sequences of randomes variables $D=X_1,\ldots,X_m, D'= Y_1,\ldots,Y_m$,
+and show that for every $i\in [m]$ they satisfy the conditions of Claim \ref{clm:neg_close_to_ind}.
+
+For $i\in [\ell]$, let $X_i = \inp_i, Y_i = \inp'_i$
+
+
+
+
+
 $\inp_1,\ldots,\inp_\ell,\inp'_1,\ldots,\inp'_\ell$
 are results of invocations of \makeinput with independent randomness
 $\rcv,\alpha$ and independent randomness of the SNARK prover.
@@ -1200,25 +1206,40 @@ We argue the probability for this is \negl:
 We know show that corresponding inputs and outputs are independent and identically distributed except w.p \negl.
 
 \begin{claim}\label{clm:inps-areind}
-The probability of an efficient \adv finding input bases \input,\input' containing distinct positioned notes consistent with \rt such that, denoting by $\inp,\inp'$ the random variables 
-\begin{itemize}
- \item 
-$\inp = \makeinput(\rt,\input,\alpha,\rcv)$ for uniform $\alpha,\rcv \in \F$
-\item
-$\inp' = \makeinput(\rt,\input',\alpha',\rcv')$ for uniform $\alpha',\rcv' \in \F$
-\end{itemize}
-they are not identically distributed and \negl-close to independent;
-is \negl.
+E.w.p \negl over the randomness of \adv, for each $i\in [\ell]$ $\inp_j,\inp'_j$ are identically distributed and independent given any fixing of $\inp_1,\ldots,\inp_{i-1},\ldots,\inp'_1,\ldots,\inp'_{i-1}$. 
+% \begin{itemize}
+%  \item 
+% $\inp = \makeinput(\rt,\input,\alpha,\rcv)$ for uniform $\alpha,\rcv \in \F$
+% \item
+% $\inp' = \makeinput(\rt,\input',\alpha',\rcv')$ for uniform $\alpha',\rcv' \in \F$
+% \end{itemize}
+% they are not identically distributed and \negl-close to independent;
+% is \negl.
 
 \end{claim}																	
 \begin{proof}
 %The first item:
 We show that except w.p. \negl over the randomness of \adv, any corresponding elements in $\inp,\inp'$ are distributed identically conditioned on fixing to an identical value of the previous elements, and independent conditioned on any fixed of previous elements.
- 
- Suppose $\inp=(\nf',\rt',\rk',\cv',\prf)$', and $\inp=(\nf',\rt',\rk',\cv',\prf')$.
+$\inp_1,\ldots,\inp_\ell,\inp'_1,\ldots,\inp'_\ell$
+are results of invocations of \makeinput with independent randomness
+$\rcv,\alpha$ and independent randomness of the SNARK prover.
+Inspection shows the only oppurtunity for dependence amongst any two of them is having 
+the random oracle  \RO queried at the same point during different invocations.
+\RO is queried for the computation of \NF; so this will only happenn if for some $i\neq j\in [\ell]$ 
+ $(\nk_i,\MPH(\note_i,\pos_i)) =(\nk_j,\MPH(\note_j,\pos_j))$.
+or 
+(a similar equality also involving the notes in $\set{\inp'_i}$.)
+This implies $\MPH(\note_i,\pos_i) = \MPH(\note_j,\pos_j)$,
+but \adv will only find such a collision w.p \negl.
+When this doesn't happen $\inp_i$ and $\inp'_i$ are independent also given any fixing of the previous inputs.
+
+
+Now to show they are identically distributed given a fixing of $\inp_1,\ldots,\inp_{i-1},\ldots,\inp'_1,\ldots,\inp'_{i-1}$.
+
+ Suppose $\inp_i=(\nf',\rt',\rk',\cv',\prf)$', and $\inp'_i=(\nf',\rt',\rk',\cv',\prf')$.
+ We show each element is identically distributed conditioned on any fixing of the previous ones.
  \begin{itemize}
-  \item  $\nf = \NF(\nk,\cm,\pos)=\RO(\nk,\MPH(\note,\pos))$ and $\nf'=\RO(\nk',\MPH(\note,\pos)$. As $(\note,\pos)$ and $(\note',\pos')$ are distinct, there are outputs of \RO on distinct inputs, and thus are both uniform and independent from each other; \emph{unless} $\MPH(\note,\pos) = \MPH(\note',\pos')$, but \adv can only find
-  such $(\note,\pos),(\note',\pos')$ with probability \negl.
+  \item  $\nf = \NF(\nk,\cm,\pos)=\RO(\nk,\MPH(\note,\pos))$ and $\nf'=\RO(\nk',\MPH(\note,\pos)$. As $(\note,\pos)$ and $(\note',\pos')$ are distinct, there are outputs of \RO on distinct inputs, and thus are both uniform and independent from each other; \emph{unless} $\MPH(\note,\pos) = \MPH(\note',\pos')$, which we are assuming is not the case as \adv finds such notes w.p at most \negl.
   \item $\rt=\rt'$.
   \item $\rk=\ak + \alpha\cdot \g$, $\rk' = \alpha' + \cdot \g$. Are independent and both uniform in \G because of the uniform choice of $\alpha,\alpha'$ in \makerandomizedtx.
   \item $\cv=\val\cdot \gv + \rcv\cdot \gr$,$\cv'=\val'\cdot \gv' + \rcv'\cdot \gr'$. Are uniform in \G and independent of each other because of the uniform and independent choices of $\rcv,\rcv'\in \F$ in the executions of \makerandomizedtx.
@@ -1233,23 +1254,35 @@ We show that except w.p. \negl over the randomness of \adv, any corresponding el
 \newcommand{\beforeoutprime}[1]{\ensuremath{D'^{\mathsf{out}}_{<#1}}\xspace}
 \newcommand{\beforein}[1]{\ensuremath{D_{<#1}}\xspace}
 \newcommand{\beforeinprime}[1]{\ensuremath{D'_{<#1}}\xspace}
-
- We show a similar statement for outputs. 
-\begin{claim}\label{clm:outs-areind}
-For any output bases \output,\primeof{\output}, denoting by $\out,\out'$ the random variables 
-\begin{itemize}
- \item 
-$\out = \makerandomizedoutput(\output,\rcv)$ for uniform $\rcv \in \F$
-\item
-$\out' = \makerandomizedoutput(\output',\rcv')$ for uniform $\rcv' \in \F$
+We proceed with the elements of the the ouputs it will be convenient now to view each element in $\out_j,\out'_j$ as a
+separate random variable $X_i,X'_i$, and show that 
+% for any fixing of $X_{<i},X'a_{<i}$
+% they are \negl-close and \negl-independent.
+% We go over the different possibilities \cv,\epk,\prf,\noteenc of the ``type'' of $X_i$
+% \end{claim}
+ 
+ \begin{itemize}
+  \item 
+ E.w.p \negl over the fixing of $X_{<i}$ they are $X_i,X'_i$ are identically distributed.
+ 
+ \item E.w.p \negl over the fixing of $X_{<i},X'_{<i}$ they are independent.
 \end{itemize}
-\out and $\out'$ are identically distributed and \negl-close to independent.
+% 
+%  We show a similar statement for outputs. 
+% \begin{claim}\label{clm:outs-areind}
+% For any output bases \output,\primeof{\output}, denoting by $\out,\out'$ the random variables 
+% \begin{itemize}
+%  \item 
+% $\out = \makerandomizedoutput(\output,\rcv)$ for uniform $\rcv \in \F$
+% \item
+% $\out' = \makerandomizedoutput(\output',\rcv')$ for uniform $\rcv' \in \F$
+% \end{itemize}
+% \out and $\out'$ are identically distributed and \negl-close to independent.
 
-\end{claim}
-\begin{proof}
-Suppose $\out=(\cv,\epk,\prf,\noteenc)$, and $\out'=(\cv',\epk',\prf',\noteenc')$ 
-We show that except w.p. \negl over the randomness of \adv, any corresponding elements in $\inp,\inp'$ are distributed identically conditioned on fixing to an identical value of the previous elements, and independent conditioned on any fixed of previous elements, except for the last elements $\noteenc,\noteenc'$ where w.p. \negl the fixing of previous elements will create a dependence between \noteenc and $\noteenc'$.
-The claim then follows from Claim \ref{clm:close_to_ind}.
+%\begin{proof}
+% Suppose $\out=(\cv,\epk,\prf,\noteenc)$, and $\out'=(\cv',\epk',\prf',\noteenc')$ 
+% We show that except w.p. \negl over the randomness of \adv, any corresponding elements in $\inp,\inp'$ are distributed identically conditioned on fixing to an identical value of the previous elements, and independent conditioned on any fixed of previous elements, except for the last elements $\noteenc,\noteenc'$ where w.p. \negl the fixing of previous elements will create a dependence between \noteenc and $\noteenc'$.
+%The claim then follows from Claim \ref{clm:close_to_ind}.
  \begin{itemize}
   \item $\cv=\val\cdot \gv + \rcv\cdot \gr,\cv'=\val'\cdot \gv + \rcv'\cdot \gr$: are independent and uniform in \G because of the independent uniform choices of $\rcv,\rcv'\in \F$ in \makerandomizedtx.
   \item $\cm = \notecom(\gd,\pk,\val,\rcm)$,$\cm' = \notecom(\gd',\pk',\val',\rcm')$: are uniform and independent in \G because of the independent uniform choices of $\rcm,\rcm'\in \F$ in \makerandomizedoutput.
@@ -1257,10 +1290,13 @@ The claim then follows from Claim \ref{clm:close_to_ind}.
   \item $\prf,\prf'$ - Assuming the pubic inputs $(\epk,\cm,\cv)=(\epk',\cm',\cv')$, it follows from the witness indistinguishability of the SNARK
   that $\prf$ and $\prf'$ are identically distributed. They are independent for any fixing of the previous values, as given this fixing the value
   of $\prf,\prf'$ depends only on the inner randomness of the SNARK prover.
-  \item $\noteenc = \symencrypt{\KDF(\esk\cdot\pk)}{(\gd,\pk,\val)}$,$\noteenc' = \symencrypt{\KDF(\esk'\cdot\pk')}{(\gd',\pk',\val')}$:
- Assuming $\esk\cdot \pk\neq \esk'\cdot \pk'$, we have that the encryption keys $\KDF(\esk\cdot\pk),\KDF(\esk'\cdot\pk')$ are uniform and independent.
- And thus by the theorem's assumption $\noteenc,\noteenc'$ are uniform and independent in this case. This is not the case only when the previous elements
- $\epk,\epk'$ imply $\esk=\esk'$ which happens w.p $1/|\F| = \negl$.
+  \item $\noteenc = \symencrypt{\KDF(k)}{(\gd,\pk,\val)}$,$\noteenc' = \symencrypt{\KDF(k')}{(\gd',\pk',\val')}$
+  where $k\defeq (\esk\cdot\pk,\epk)$ and $k'\defeq (\esk'\cdot\pk',\epk')$:
+ Assuming $k\neq k'$, and moreover \set{k,k'} are different from all the ``key seeds'' \set{k_j,k'_j} used in previous outputs we have that the encryption keys $\KDF(k),\KDF(k')$ are uniform and independent of all previous variables.
+ And thus by the theorem's assumption $\noteenc,\noteenc'$ are uniform and independent in this case.
+ Thus there are at most $\ell$ values of the preceding $\esk$ and at most $\ell$ values of the preceding $\esk'$ that 
+ can prevent \noteenc and \noteenc' from being uniform and independent;
+ which is a \negl-fraction of the possible values of the preceding values.
   \end{itemize}
 \end{proof}
 

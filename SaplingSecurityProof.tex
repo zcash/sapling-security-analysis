@@ -686,7 +686,7 @@ Furthermore, \ext's running time will be $P(\lambda)$ where $P$ is a polynomial 
  \subsection{Basic components}
 \subsection*{Functions, and their requirements:}
 We do not explicitly state function domains and ranges; see the spec for more details.
-Whenever discussing a function in the properties below, we always think of an infinite sequence of functions indexed by the security paramter $\lambda$.
+Whenever discussing a function in the properties below, we always think of an infinite sequence of functions indexed by the security parameter $\lambda$.
 \begin{enumerate}
  \item For any fixed values $\gd,\pk,\val$, and for any $\eps\geq 0$, $\notecom(\gd,\pk,\val,\rcm)$ is $\eps$-close to uniform when $\rcm$ is $\eps$-close to uniform.
  \item \notecom is collision resistant - i.e. the probability of finding $\note,\note'$ such that $\notecom(\note)=\notecom(\note')$ is \negl. \footnote{A caveat here is that this is true when the $\rcm$ parameter is thought of as a field element; in the actual circuit it is received as a string of bits where some elements of $\F$ have multiple representations; inspection of the proof shows that it suffices that CR w.r.t \rcm as a field element; same story with \rcv in \valcom.}
@@ -730,7 +730,7 @@ A \emph{note} is a tupple $\note = (\gd,\pk,\val,\rcm)$ where
 
 An \emph{output base} $\output=(\gd,\pk,\val)$ is the same as a note excluding the \rcm component.
 \begin{remark}
- It is convenient for us to define a note with \gd rather than its \GH-preimage \d as in the spec, as this is what's given as input to the circuits; there are minor non-expoitable issues with this, see e.g. https://github.com/zcash/zcash/issues/3490.
+ It is convenient for us to define a note with \gd rather than its \GH-preimage \d as in the spec, as this is what's given as input to the circuits; there are minor non-exploitable issues with this, see e.g. https://github.com/zcash/zcash/issues/3490.
 \end{remark}
 
 
@@ -755,7 +755,7 @@ A \emph{transaction input}, usually denoted \inp, is the final form an input app
  \item A value commitment \cv.
  \item A nullifier \nf.
  \item A Merkle root \rt of the tree containing the used note.
- \item A public key \rk that is (allegedely) a randomized version of the spent note's proving key \ak.
+ \item A public key \rk that is (allegedly) a randomized version of the spent note's proving key \ak.
  \item A SNARK proof \prf for the statement \spendstatement{\rt,\cv,\nf,\rk}.
 \end{enumerate}
 
@@ -1048,16 +1048,16 @@ Otherwise output \rej and abort.
 
 \oracle begins by choosing a uniform spending key $(\ask,\nsk)\in\keyset$.
 And generates the corresponding keys $\ak\defeq \ask\cdot \g ,\nk\defeq \nsk\cdot\g, \ivk \defeq\IVK(\ak,\nk)$. 
-\adv and \oracle initialize an empty set $T$ of diversifed addresses.
+\adv and \oracle initialize an empty set $T$ of diversified addresses.
 % \adv and \oracle initialize an empty merkle tree \tree
  \adv and \oracle initialize an empty set of current notes \curnotes. 
 \adv can make two kinds of queries.
 
-\paragraph{Get new diversifed address queries}
+\paragraph{Get new diversified address queries}
 \begin{itemize}
 \item\oracle chooses $\gd\in \G$ according to the distribution \GH of the group hash output.
-\item\oracle then outputs the diversifed address $(\gd,\pk \defeq \ivk\cdot \gd)$.
-\item \adv and \oracle add $(\gd,\pk)$ to the set of diversifed addresses $T$.
+\item\oracle then outputs the diversified address $(\gd,\pk \defeq \ivk\cdot \gd)$.
+\item \adv and \oracle add $(\gd,\pk)$ to the set of diversified addresses $T$.
 \end{itemize}
 \paragraph{Make transaction queries}
 \begin{itemize}
@@ -1217,7 +1217,7 @@ We show that except w.p. \negl over the randomness of \adv, any corresponding el
  
  Suppose $\inp=(\nf',\rt',\rk',\cv',\prf)$', and $\inp=(\nf',\rt',\rk',\cv',\prf')$.
  \begin{itemize}
-  \item  $\nf = \NF(\nk,\cm,\pos)=\RO(\nk,\MPH(\note,\pos))$ and $\nf'=\RO(\nk',\MPH(\note,\pos)$. As $(\note,\pos)$ and $(\note',\pos')$ are distinct, there are outputs of \RO on distinct inputs, and thus are both uniform and independet from each other; \emph{unless} $\MPH(\note,\pos) = \MPH(\note',\pos')$, but \adv can only find
+  \item  $\nf = \NF(\nk,\cm,\pos)=\RO(\nk,\MPH(\note,\pos))$ and $\nf'=\RO(\nk',\MPH(\note,\pos)$. As $(\note,\pos)$ and $(\note',\pos')$ are distinct, there are outputs of \RO on distinct inputs, and thus are both uniform and independent from each other; \emph{unless} $\MPH(\note,\pos) = \MPH(\note',\pos')$, but \adv can only find
   such $(\note,\pos),(\note',\pos')$ with probability \negl.
   \item $\rt=\rt'$.
   \item $\rk=\ak + \alpha\cdot \g$, $\rk' = \alpha' + \cdot \g$. Are independent and both uniform in \G because of the uniform choice of $\alpha,\alpha'$ in \makerandomizedtx.
@@ -1408,7 +1408,7 @@ We claim that we must have for some $\tx\in\ledger$, $\bal(\tx)\neq \vbal(\tx)$:
 Otherwise, we would have
 \[\sum_{\tx\in \ledger} \vbal(\tx) = \sum_{\tx\in\ledger} \bal(\tx) \leq 0,\]
 
-contradicting the fact that \adv has mannaged to output \ledger with a positive sum of $\vbal$ values.
+contradicting the fact that \adv has managed to output \ledger with a positive sum of $\vbal$ values.
 
 Thus, let $\tx=\tx_i$ be such that $\bal(\tx)\neq\vbal(\tx)$. We show in the next step how \adv' uses this to output a collision of \valcom.
 
@@ -1469,7 +1469,7 @@ And also
 %We consider an adversary \adv that has access to \signallinputs queries of \oracle, identically to the non-malleability section.
 % \adv receives a challenge $\pak = (\ak,\nsk)$ where $\nsk\in \F,\ak\in \G$ were chosen uniformly.
 % Let $\ivk\defeq \IVK(\pak)$.
-In the spendability game \adv tries to create a ledger where a note succesfully decrypted with \ivk cannot be spent.
+In the spendability game \adv tries to create a ledger where a note successfully decrypted with \ivk cannot be spent.
 Formally, the game proceeds as follows.
 \begin{enumerate}
  \item We choose uniform $\sk = (\ask,\nsk)$; and give $\pak=(\ask\cdot \gsig, \nsk)$ to \adv.
@@ -1490,12 +1490,12 @@ We wish to show that the success of any efficient \adv in this game is \negl.
 
 
 Let $\nk =\nsk\cdot\gnk$.
-Inspection of the protocol shows this exactly corresponds to the nullifer of \note with nullifer key \nk already appearing in the ledger.
+Inspection of the protocol shows this exactly corresponds to the nullifier of \note with nullifier key \nk already appearing in the ledger.
 Thus, it suffices to prove the following.
 \begin{claim}\label{sapling-spendability}
  Fix any efficient \adv.
  Suppose that \adv  is given uniformly chosen \pak, and let $\ivk \defeq \IVK(\pak)$.
-The probability that \adv generates a ledger \ledger and positoned note (\note,\pos) such that 
+The probability that \adv generates a ledger \ledger and positioned note (\note,\pos) such that 
  \begin{enumerate}
   \item $(\note,\pos)\in \dec(\ivk,\ledger)$
   \item $\NF(\nk,\notecom(\note),\pos)\in \nfof{\ledger}$ 
@@ -1577,7 +1577,7 @@ and \advprime outputs $(\alpha, \rawtx, \sig)$ as a forgery of \schnorr with cha
 % is \negl.
 
 
-\subsection{Indistinguishability of diversifed addresses}
+\subsection{Indistinguishability of diversified addresses}
 
 
 El-gammal encryption

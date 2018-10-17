@@ -981,7 +981,7 @@ and with probability $\eps-\negl$ either
 \begin{itemize}
 \item outputs a collision of \sighash
 \item outputs a collision of \NF, 
- \item outputs a collision of \notecom, 
+ %\item outputs a collision of \notecom, 
  \item outputs a collision of \IVK, 
 \item  Constructs a signature forgery for \schnorr w.r.t randomization.
 \end{itemize}
@@ -1008,10 +1008,10 @@ Then, from CR of \sighash, \NF,\notecom,\IVK and Theorem \ref{thm:schnorr-nf} th
  step 5 where \adv outputted \tx.
  Except with probability \negl, \ext outputs a witness $\wit=(\note,\pak=(\ak,\nsk),\alpha,\path,\pos)$.
  Similarly there is an extractor \ext' for the input \inp' in \tx' giving us a witness $\wit'=(\note',\pak'=(\ak',\nsk'),\alpha',\path',\pos')$.
-\item Let $\nk\defeq \nsk\cdot \g, \nk'\defeq \nsk'\cdot \g$.  We have \[\NF(\nk,\cm,\pos) = \NF(\nk',\cm',\pos')=\nf\]
-If $\nk\neq\nk',\cm\neq\cm'$ or $\pos\neq \pos'$ \advprime outputs $(\nk,\cm,\pos), (\nk',\cm',\pos')$ as a collision of \NF.
-\item Otherwise, we have $\notecom(\note)=\notecom(\note')=\cm$.
-If $\note \neq \note'$, \advprime outputs $\note,\note'$ as a collision of \notecom.
+\item Let $\nk\defeq \nsk\cdot \g, \nk'\defeq \nsk'\cdot \g$.  We have \[\NF(\nk,\note,\pos) = \NF(\nk',\note',\pos')=\nf.\]
+If $\nk\neq\nk',\note\neq\note'$ or $\pos\neq \pos'$, \advprime outputs $(\nk,\note,\pos), (\nk',\note',\pos')$ as a collision of \NF.
+% \item Otherwise, we have $\notecom(\note)=\notecom(\note')=\cm$.
+% If $\note \neq \note'$, \advprime outputs $\note,\note'$ as a collision of \notecom.
 
 \item Otherwise we have $\note=\note'=(\gd,\pk,\val,\rcm)$.
 Defining
@@ -1390,12 +1390,13 @@ We show in this case that \adv' can output a collision of \IVK:
 Let $\cm=\notecom(\gd,\pk,\val,\rcm)$.
 Since $\nf\neq \nf'$,
 and 
-$\nf = \NF(\nk,\cm,\pos),\nf'= \NF(\nk',\cm,\pos)$;
+$\nf = \NF(\nk,\note,\pos),\nf'= \NF(\nk',\note,\pos)$;
+
 we have  $\nk \neq\nk'$.
 
 Also $\ivk = \IVK(\ak,\nk), \ivk'=\IVK(\ak',\nk')$,
 and $\pk=\ivk\cdot \gd = \ivk'\cdot \gd$.
-So $\ivk=\ivk'$ (Check with Sean is ivk canonical - checked)
+So $\ivk=\ivk'$ \ariel{Check with Sean is ivk canonical - checked}
 And thus, \adv' can output $(\ak,\nk),(\ak',\nk')$ as a collision of \IVK.
 
 
@@ -1414,7 +1415,7 @@ Otherwise, we would have
 
 contradicting the fact that \adv has managed to output \ledger with a positive sum of $\vbal$ values.
 
-Thus, let $\tx=\tx_i$ be such that $\bal(\tx)\neq\vbal(\tx)$. We show in the next step how \adv' uses this to output a collision of \valcom.
+Thus, let $\tx=\tx_i$ be such that $\bal(\tx)\neq\vbal(\tx)$. We show in the next step how $\adv'$ uses this to output a collision of \valcom.
 
 \item At this point, we know that $\bal(\tx) \neq \vbal(\tx)$. As both these values are in the open interval \footnote{See 
 the spec for details: \vbal and \val in each transaction input/output are at most $2^{64}$ in absolute value, so assuming 
@@ -1542,7 +1543,7 @@ and \advprime outputs $(\alpha, \rawtx, \sig)$ as a forgery of \schnorr with cha
 
 \begin{remark}
  Note that in the spendability and non-malleability property \adv can choose what value \nf to work with.
- It seems likely that in a weaker model where the values \nf 
+ It seems likely that in a weaker model where the values \nf are generated randomly via honest users' notes, a second preimage resistance property of \NF would suffice (Thanks to Sean Bowe and Zooko Wilcox for mentioning this).
 \end{remark}
 
 
@@ -1581,13 +1582,13 @@ and \advprime outputs $(\alpha, \rawtx, \sig)$ as a forgery of \schnorr with cha
 % is \negl.
 
 
-\subsection{Indistinguishability of diversified addresses}
+%\subsection{Indistinguishability of diversified addresses}
 
 
-El-gammal encryption
-private key \sk
-public key $[\sk]\cdot \g$
-encryption of $x$: [\sk]
+% El-gammal encryption
+% private key \sk
+% public key $[\sk]\cdot \g$
+% encryption of $x$: [\sk]
 \bibliography{refs}
 \bibliographystyle{plain}
 \end{document}

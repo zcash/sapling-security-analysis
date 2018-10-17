@@ -694,8 +694,8 @@ Whenever discussing a function in the properties below, we always think of an in
 \item \valcom is collision-resistant.
 \item \sighash is collision-resistant.
 \item \IVK is collision-resistant.
-\item \NF is modeled as a random oracle outputting at least $\lambda$ bits (and thus is in particular, collision-resistant).
-% \item For the indistinguishability property (Section \ref{sec:indist}) we will require \NF,\
+\item \NF is collision resistant; and has the structural property that $\NF(\nk,\note,\pos) = \RO(\nk,\notecom(\note),\pos)$ for some function \RO 
+(see another requirement for the indistinguishability property in Section \ref{sec:indist}).
 \end{enumerate}
 
 \paragraph{Generators of \G}
@@ -773,7 +773,7 @@ where \input is an input base consistent with \rt.
 
 \begin{enumerate}
 \item \cm = \notecom(\note)
- \item \nf = \NF(\nk,\cm,\pos)
+ \item \nf = \NF(\nk,\note,\pos)
  \item Define $\rk\defeq \ak +\alpha\cdot \g, \cv\defeq  \val\cdot \gv+ \rcv\cdot \gr $.
  \item Let $\prf = \provspend(\cv,\rt,\nf,\rk;\note,\pak,\alpha,\path,\pos)$.
  \item Output $(\cv,\rt,\nf,\rk,\pi)$.
@@ -1175,7 +1175,7 @@ is \negl.
 \begin{proof}
 Let us denote by $(\inps,\outs,\sigval,\sigs)$ the output of $\makerandomizedtx(\rt,\vbal,\inputs,\outputs)$
 and by $(\inps',\outs',\sigval',\sigs')$ the output of $\makerandomizedtx(\rt,\vbal,\inputs',\outputs')$
-when using independent inner randomness, but joint randomness for the oracles $\RO,\KDF$.
+when using independent inner randomness, but joint randomness for the oracles $\RO,\ROsig,\KDF$.
 
 We will consider $D$ and $D'$ as sequences of random variables $D=(X_1,\ldots,X_m), D'= (Y_1,\ldots,Y_m)$,
 and show that for every $i\in [m]$ they satisfy the conditions of Claim \ref{clm:neg_close_to_ind}.

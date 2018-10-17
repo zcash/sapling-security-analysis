@@ -509,10 +509,10 @@ We state the following theorem that is almost implicit in \cite{PS00}
 There is an algorithm \ext with the following property.
 Fix any efficient \adv and group element $\g\in\G$. Suppose that \adv produces w.p. $\gamma$
 $(\pk,\msg,\sig)$ such that $\versig^{\RO}_{\g}(\pk,\msg,\sig)$.
-Then given the output $(\pk,\msg,\sig)$ of \adv, and the internal randomness used by \adv in the run,
+Then, given the internal randomness used by \adv in the run,
 \ext produces w.p $\gamma/2$ over (\adv)'s randomness and its own randomness $s\in\F$ such that
 $\pk = s\cdot \g$.
-Furthermore, \ext's running time will be $P(\lambda)$ where $P$ is a polynomial depending on the running time of \adv.
+Furthermore, \ext's running time will be $P(\lambda,1/\gamma)$ where $P$ is a polynomial depending on the running time of \adv.
 \end{thm}
 
  
@@ -1089,6 +1089,8 @@ Reduce to Claim \ref{clm:nmal-sapling}.
 We
 \end{proof}
 \subsection{Indistinguishability w.r.t outside adversaries}
+For a sequence of random variables $X_1,\ldots,X_n$ it will be convenient in this section to denote  
+$X_{<i}\defeq (X_1,\ldots,X_{i-1})$.
 Let us say that random variables $X,Y$ are $\gamma$-independent if for
 any events $A,B$
 \[|\pr(X\in A \wedge Y\in B)-\pr(X\in A)\cdot \pr(Y\in B)|\leq \gamma.\]
@@ -1118,12 +1120,12 @@ A calculation proves
   
   \begin{itemize}
    \item 
-e.w.p \negl over the value $(x_1,\ldots,x_{i-1},y_1,\ldots,y_{i-1})$ of $(X_1,\ldots,X_{i-1},Y_{1},\ldots,Y_{i-1})$,
+e.w.p \negl over the value $(x_{<i},y_{<i})$ of $(X_{<i},Y_{<i})$,
 
-  $(X_i|(X_1,\ldots,X_{i-1})=(x_1,\ldots,x_{i-1}))$ and $(Y_i|(Y_1,\ldots,Y_{i-1})=(y_1,\ldots,y_{i-1}))$ are \negl-independent;
+  $(X_i|X_{<i}=x_{<i})$ and $(Y_i|Y_{<i}=y_{<i})$ are \negl-independent;
   and
-  \item e.w.p \negl over the value $(x_1,\ldots,x_{i-1})$ of $(X_1,\ldots,X_{i-1})$,
-  $(X_i|(X_1,\ldots,X_{i-1})=(x_1,\ldots,x_{i-1}))$ and $(Y_i|(Y_1,\ldots,Y_{i-1})=(x_1,\ldots,x_{i-1}))$
+  \item e.w.p \negl over the value $x_{<i}$ of $X_{<i}$,
+  $(X_i|X_{<i}=x_{<i})$ and $(Y_i|Y_{<i}=y_{<i})$
   are \negl-close.
   \end{itemize}
   Then $X,Y$ are \negl-independent and are \negl-close.
@@ -1145,7 +1147,7 @@ Fix any $(\inputs,\outputs)$ that is consistent with $\rt,\vbal$.
 Assume that 
 \begin{enumerate}
  \item 
-$\NF(\nk,\notecom(\note),\pos)= \RO(\nk,\MPH(\note,\pos))$ where \RO is a random oracle and \MPH is a collision-resistant function\footnote{The requirement here may seem a bit odd; it models the fact the $\notecom(\note)$ is a pedersen hash which is combined in \NF with a $\pos$-multiple of an independent group generator, followed by an application of BLAKE-2 on the result prefixed with \nk. In particular, BLAKE-2 takes the place of \RO in the impelmentation.}
+$\NF(\nk,\notecom(\note),\pos)= \RO(\nk,\MPH(\note,\pos))$ where \RO is a random oracle and \MPH is a collision-resistant function\footnote{The requirement here may seem a bit odd; it models the fact that $\notecom(\note)$ is a pedersen hash which is combined in \NF with a $\pos$-multiple of an independent group generator, followed by an application of BLAKE-2 on the result prefixed with \nk. In particular, BLAKE-2 takes the place of \RO in the implementation.}
 
 \item
 \KDF is also a random oracle.
@@ -1171,70 +1173,40 @@ is \negl.
 
 \end{thm}
 \begin{proof}
-Let us denote by $(\inps,\outs,\sigval,\sigs)$ the output of $\makerandomizedtx(\rt,\vbal,\inputs,\outputs$
+Let us denote by $(\inps,\outs,\sigval,\sigs)$ the output of $\makerandomizedtx(\rt,\vbal,\inputs,\outputs)$
 and by $(\inps',\outs',\sigval',\sigs')$ the output of $\makerandomizedtx(\rt,\vbal,\inputs',\outputs')$
 when using independent inner randomness, but joint randomness for the oracles $\RO,\KDF$.
 
-We will consider $D$ and $D'$ as sequences of randomes variables $D=X_1,\ldots,X_m, D'= Y_1,\ldots,Y_m$,
+We will consider $D$ and $D'$ as sequences of randomes variables $D=(X_1,\ldots,X_m), D'= (Y_1,\ldots,Y_m)$,
 and show that for every $i\in [m]$ they satisfy the conditions of Claim \ref{clm:neg_close_to_ind}.
 
-For $i\in [\ell]$, let $X_i = \inp_i, Y_i = \inp'_i$
-
-
-
-
+For $i\in [\ell]$, let $X_i = \inp_i, Y_i = \inp'_i$.
 
 $\inp_1,\ldots,\inp_\ell,\inp'_1,\ldots,\inp'_\ell$
 are results of invocations of \makeinput with independent randomness
 $\rcv,\alpha$ and independent randomness of the SNARK prover.
-$\out_1,\ldots,\out_s,\out'_1,\ldots,\out'_s$ are outputs of invocations of \makerandomizedoutput with
-independent randomness $\esk,\rcm,\rcv$ and independent randomness of the SNARK prover.
-Inspection shows the only oppurtunity for dependence is having 
-the random oracles \KDF and \RO queried at the same point during different invocations.
-We argue the probability for this is \negl:
-\begin{enumerate}
- \item \RO will have a repeated query during computing of \nf, iff for some $i\neq j\in [\ell]$ 
- $(\nk_i,\MPH(\note_i,\pos_i)) =(\nk_j,\MPH(\note_j,\pos_j))$.
- As the notes are distinct, this would require finding a collision of \MPH.
- \item \KDF will have a repeated query iff for some $i\neq j \in [s]$
- $\esk_i\cdot \pk_i = \esk_j \cdot \pk_j$; this happens with \negl probability as \esk is chosen independently for
- each output.
-\end{enumerate}
 
-\end{proof}
-
-We know show that corresponding inputs and outputs are independent and identically distributed except w.p \negl.
+We show that corresponding inputs and outputs are independent and identically distributed except w.p \negl.
 
 \begin{claim}\label{clm:inps-areind}
-E.w.p \negl over the randomness of \adv, for each $i\in [\ell]$ $\inp_j,\inp'_j$ are identically distributed and independent given any fixing of $\inp_1,\ldots,\inp_{i-1},\ldots,\inp'_1,\ldots,\inp'_{i-1}$. 
-% \begin{itemize}
-%  \item 
-% $\inp = \makeinput(\rt,\input,\alpha,\rcv)$ for uniform $\alpha,\rcv \in \F$
-% \item
-% $\inp' = \makeinput(\rt,\input',\alpha',\rcv')$ for uniform $\alpha',\rcv' \in \F$
-% \end{itemize}
-% they are not identically distributed and \negl-close to independent;
-% is \negl.
+E.w.p \negl over the randomness of \adv, for each $i\in [\ell]$ $\inp_i,\inp'_i$ are identically distributed and independent given any fixing of $\inp_1,\ldots,\inp_{i-1},\ldots,\inp'_1,\ldots,\inp'_{i-1}$. 
 
 \end{claim}																	
 \begin{proof}
-%The first item:
-We show that except w.p. \negl over the randomness of \adv, any corresponding elements in $\inp,\inp'$ are distributed identically conditioned on fixing to an identical value of the previous elements, and independent conditioned on any fixed of previous elements.
+We show that except w.p. \negl over the randomness of \adv, any corresponding elements in $\inp_i,\inp'_i$ are distributed identically conditioned on fixing to an identical value of the previous elements, and independent conditioned on any fixing of previous elements in $\inp_i,\inp'_i$ and any fixing of $\inp_{<i},\inp'_{<i}$.
 $\inp_1,\ldots,\inp_\ell,\inp'_1,\ldots,\inp'_\ell$
 are results of invocations of \makeinput with independent randomness
 $\rcv,\alpha$ and independent randomness of the SNARK prover.
-Inspection shows the only oppurtunity for dependence amongst any two of them is having 
-the random oracle  \RO queried at the same point during different invocations.
-\RO is queried for the computation of \NF; so this will only happenn if for some $i\neq j\in [\ell]$ 
- $(\nk_i,\MPH(\note_i,\pos_i)) =(\nk_j,\MPH(\note_j,\pos_j))$.
-or 
-(a similar equality also involving the notes in $\set{\inp'_i}$.)
+Inspection shows the only opportunity for dependence amongst any two of them, even after conditioning on the value of the others, is having 
+the random oracle  \RO queried at the same point during the $2\ell$ different invocations.
+\RO is queried for the computation of \NF; so this only happens if for some $i\neq j\in [2\ell]$ 
+ \[(\nk_i,\MPH(\note_i,\pos_i)) =(\nk_j,\MPH(\note_j,\pos_j)).\]
 This implies $\MPH(\note_i,\pos_i) = \MPH(\note_j,\pos_j)$,
 but \adv will only find such a collision w.p \negl.
 When this doesn't happen $\inp_i$ and $\inp'_i$ are independent also given any fixing of the previous inputs.
 
 
-Now to show they are identically distributed given a fixing of $\inp_1,\ldots,\inp_{i-1},\ldots,\inp'_1,\ldots,\inp'_{i-1}$.
+Now to show they are identically distributed given a fixing of $\inp_1,\ldots,\inp_{i-1},\inp'_1,\ldots,\inp'_{i-1}$.
 
  Suppose $\inp_i=(\nf',\rt',\rk',\cv',\prf)$', and $\inp'_i=(\nf',\rt',\rk',\cv',\prf')$.
  We show each element is identically distributed conditioned on any fixing of the previous ones.
@@ -1254,35 +1226,19 @@ Now to show they are identically distributed given a fixing of $\inp_1,\ldots,\i
 \newcommand{\beforeoutprime}[1]{\ensuremath{D'^{\mathsf{out}}_{<#1}}\xspace}
 \newcommand{\beforein}[1]{\ensuremath{D_{<#1}}\xspace}
 \newcommand{\beforeinprime}[1]{\ensuremath{D'_{<#1}}\xspace}
-We proceed with the elements of the the ouputs it will be convenient now to view each element in $\out_j,\out'_j$ as a
-separate random variable $X_i,X'_i$, and show that 
+We proceed with the elements of the the ouputs. It will be convenient now to view each element in $\out_j,\out'_j$ as a
+separate random variable $X_i,Y_i$, and show that 
 % for any fixing of $X_{<i},X'a_{<i}$
 % they are \negl-close and \negl-independent.
 % We go over the different possibilities \cv,\epk,\prf,\noteenc of the ``type'' of $X_i$
 % \end{claim}
  
- \begin{itemize}
+ \begin{enumerate}
   \item 
- E.w.p \negl over the fixing of $X_{<i}$ they are $X_i,X'_i$ are identically distributed.
+ E.w.p \negl over the fixing of $X_{<i}$ they are identically distributed.
  
- \item E.w.p \negl over the fixing of $X_{<i},X'_{<i}$ they are independent.
-\end{itemize}
-% 
-%  We show a similar statement for outputs. 
-% \begin{claim}\label{clm:outs-areind}
-% For any output bases \output,\primeof{\output}, denoting by $\out,\out'$ the random variables 
-% \begin{itemize}
-%  \item 
-% $\out = \makerandomizedoutput(\output,\rcv)$ for uniform $\rcv \in \F$
-% \item
-% $\out' = \makerandomizedoutput(\output',\rcv')$ for uniform $\rcv' \in \F$
-% \end{itemize}
-% \out and $\out'$ are identically distributed and \negl-close to independent.
-
-%\begin{proof}
-% Suppose $\out=(\cv,\epk,\prf,\noteenc)$, and $\out'=(\cv',\epk',\prf',\noteenc')$ 
-% We show that except w.p. \negl over the randomness of \adv, any corresponding elements in $\inp,\inp'$ are distributed identically conditioned on fixing to an identical value of the previous elements, and independent conditioned on any fixed of previous elements, except for the last elements $\noteenc,\noteenc'$ where w.p. \negl the fixing of previous elements will create a dependence between \noteenc and $\noteenc'$.
-%The claim then follows from Claim \ref{clm:close_to_ind}.
+ \item E.w.p \negl over the fixing of $X_{<i},Y_{<i}$ they are independent.
+\end{enumerate}
  \begin{itemize}
   \item $\cv=\val\cdot \gv + \rcv\cdot \gr,\cv'=\val'\cdot \gv + \rcv'\cdot \gr$: are independent and uniform in \G because of the independent uniform choices of $\rcv,\rcv'\in \F$ in \makerandomizedtx.
   \item $\cm = \notecom(\gd,\pk,\val,\rcm)$,$\cm' = \notecom(\gd',\pk',\val',\rcm')$: are uniform and independent in \G because of the independent uniform choices of $\rcm,\rcm'\in \F$ in \makerandomizedoutput.
@@ -1300,7 +1256,7 @@ separate random variable $X_i,X'_i$, and show that
   \end{itemize}
   
   
-  It is now left to deal with the signature elements. $\sigval,\sigval',\sett{\sig_i,\sig'_i}$.
+  It is now left to deal with the signature elements. $\sigval,\sigval',\set{\sig_i,\sig'_i}$.
   
   The distribution of these elements is determined by the public key $\pk=\rk_i$ (or $\pk =S$ the sum of value commitments in the case of \sigval),
   the message $\msg = \sighash(\rawtx)$ they are signing, the internal randomness of the signing algorithm and the reply of the random oracle 
@@ -1311,54 +1267,54 @@ separate random variable $X_i,X'_i$, and show that
 
 
 
-Now it's easy to see that
-\begin{claim}\label{clm:ind_of_inputs}
-Except with probability \negl, over the randomness of \adv,
- $\inp_1,\ldots,\inp_\ell,\out_1,\ldots,\out_s,\inp'_1,\ldots,\inp'_\ell,\out'_1,\ldots,\out'_s$ are \negl-close to independent random variables.
-\end{claim}
-\begin{proof}
-  It follows from the above two claims that any pair of inputs, or pair of outputs are \negl-close to independent.
-  Since there are no colliding random oracle queries between inputs and outputs, the claim follows.
-\end{proof}
-
-
-Denote $\sig_0\defeq \sigval$.
-
-
-\begin{claim}\label{clm:ind_of_sigs}
-For any $i\in [0..\ell]$, and any 
- Conditioned on any fixing of $\inp_1,\ldots,\inp_\ell,\out_1,\ldots,\out_s,\inp'_1,\ldots,\inp'_\ell,\out'_1,\ldots,\out'_s,\sig_0,\ldots,\sig_{i-1},\sig'_0,\ldots,\sig'_{i-1}$ the values
- $\set{\sig_i,\sig'_i}$ are \negl-close to independent.
-\end{claim}
-\begin{proof}
- The distribution of any given $\sig_i$ is of the form $R,u$ where $R\in \G$ is uniformly chosen by the signing algorithm as $a\cdot \gr$,
- and $u=a+c\cdot \sk$ where $c=\ROsig(R,\pk,\sighash(\rawtx)$.
- For dependence to be created we would need $R=R`$ which happens with probability $1/|\F|$.
- More formally, e.w.p $1/|\F|$ over the probability of the values $x,y$ of $\sig_i,\sig'_i$,
- we have 
-\[\pr(\sig_i=x \wedge \sig'_i =y)=\pr(\sig_i =x)\cdot \pr(\sig'_i =y)\]
- which means $\sig_i,\sig'_i$ (conditioned on any fixing of all previous variables mentioned in the claim statement) are \negl-close to independent.
- 
-\end{proof}
-
-
-
-
-\begin{proof} (of Theorem \ref{thm:indist-sapling})
-Note that 
-% $\inp_1,\ldots,\inp_\ell, \out_1,\ldots,\out_s$ are all independent from each other. (Here we use that \set{\pos_j} are all different and thus \set{\nf_j}
-are independent values of the random oracle \NF at distinct inputs).
-$\sig_1,\ldots,\sig_\ell$ are independent from each other, depend on \inps and the inner randomness of the signer.
-
-
-$\inp_j$ has the form
-\[\inp_j = (\nf,\rt,\rk,\cv,\prf)\]
-
-  
-
-the signature \sigval: can be simulating by a signing oracle except w.p. \negl (get's ruined if \RO was already queried on point)
-the signatures \sigs: same.
-\end{proof}
+% Now it's easy to see that
+% \begin{claim}\label{clm:ind_of_inputs}
+% Except with probability \negl, over the randomness of \adv,
+%  $\inp_1,\ldots,\inp_\ell,\out_1,\ldots,\out_s,\inp'_1,\ldots,\inp'_\ell,\out'_1,\ldots,\out'_s$ are \negl-close to independent random variables.
+% \end{claim}
+% \begin{proof}
+%   It follows from the above two claims that any pair of inputs, or pair of outputs are \negl-close to independent.
+%   Since there are no colliding random oracle queries between inputs and outputs, the claim follows.
+% \end{proof}
+% 
+% 
+% Denote $\sig_0\defeq \sigval$.
+% 
+% 
+% \begin{claim}\label{clm:ind_of_sigs}
+% For any $i\in [0..\ell]$, and any 
+%  Conditioned on any fixing of $\inp_1,\ldots,\inp_\ell,\out_1,\ldots,\out_s,\inp'_1,\ldots,\inp'_\ell,\out'_1,\ldots,\out'_s,\sig_0,\ldots,\sig_{i-1},\sig'_0,\ldots,\sig'_{i-1}$ the values
+%  $\set{\sig_i,\sig'_i}$ are \negl-close to independent.
+% \end{claim}
+% \begin{proof}
+%  The distribution of any given $\sig_i$ is of the form $R,u$ where $R\in \G$ is uniformly chosen by the signing algorithm as $a\cdot \gr$,
+%  and $u=a+c\cdot \sk$ where $c=\ROsig(R,\pk,\sighash(\rawtx)$.
+%  For dependence to be created we would need $R=R`$ which happens with probability $1/|\F|$.
+%  More formally, e.w.p $1/|\F|$ over the probability of the values $x,y$ of $\sig_i,\sig'_i$,
+%  we have 
+% \[\pr(\sig_i=x \wedge \sig'_i =y)=\pr(\sig_i =x)\cdot \pr(\sig'_i =y)\]
+%  which means $\sig_i,\sig'_i$ (conditioned on any fixing of all previous variables mentioned in the claim statement) are \negl-close to independent.
+%  
+% \end{proof}
+% 
+% 
+% 
+% 
+% \begin{proof} (of Theorem \ref{thm:indist-sapling})
+% Note that 
+% % $\inp_1,\ldots,\inp_\ell, \out_1,\ldots,\out_s$ are all independent from each other. (Here we use that \set{\pos_j} are all different and thus \set{\nf_j}
+% are independent values of the random oracle \NF at distinct inputs).
+% $\sig_1,\ldots,\sig_\ell$ are independent from each other, depend on \inps and the inner randomness of the signer.
+% 
+% 
+% $\inp_j$ has the form
+% \[\inp_j = (\nf,\rt,\rk,\cv,\prf)\]
+% 
+%   
+% 
+% the signature \sigval: can be simulating by a signing oracle except w.p. \negl (get's ruined if \RO was already queried on point)
+% the signatures \sigs: same.
+% \end{proof}
 \subsection{Balance}
 The following claim states an adversary should not be able to create ``money out of thin air'';
 or more specifically, extract more money from the shielded pool than was put in it.

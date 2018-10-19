@@ -290,7 +290,7 @@ Sapling Security Proof}
 \newcommand{\oracleprime}{\ensuremath{\mathscr O'}\xspace}
 \newcommand{\g}{\ensuremath{\mathsf{g}}\xspace}
 
-\section{Signature schemes}
+\section{Signature schemes}\label{sec:signatures}
 %We assume all parties below have access to a random oracle \RO taking arbitrary strings as input and outputting uniform elements of \F.
 
 When we say an algorithm \adv is \emph{efficient}, when mean it runs in time \poly for the ``security parameter'' $\lambda$.
@@ -507,20 +507,20 @@ this means that the probability that
 is \negl.
 This is exactly what we had to prove.
 \end{proof}
-\newcommand{\sample}{\ensuremath{\mathrm{sample}}\xspace}
-\newcommand{\invert}{\ensuremath{\mathrm{invert}}\xspace}
+\newcommand{\sample}{\ensuremath{\mathbf{sample}}\xspace}
+\newcommand{\invert}{\ensuremath{\mathbf{invert}}\xspace}
 \paragraph{Invertible group samplers}
-We assume for our group \G we have an efficient procedure \sample that produces a group element in \G that is \negl-close to uniform,
-such that there is an efficient deterministic algoritm \invert that given the output of \sample, produces w.p $1/\poly$
+We assume that for our group \G we have an efficient randomized procedure \sample that produces a group element in \G that is \negl-close to uniform,
+such that there is an efficient deterministic algorithm \invert that given the output of \sample, produces w.p $1/\poly$
 over the randomness of \sample, the randomness $r$ used in that execution. 
 
 Note that when \G is an elliptic curve group over \F such a pair $(\sample,\invert)$
 is having \sample try $\lambda$ iterations of: Choose random $x\in \F$, check if there exists some $(x,y)\in \G$, if so output one of the two such elements randomly; and otherwise try another random $x\in\F$.
 
-\invert, given $(x,y)\in \G$, will output $(x,\mathsf(sign)(y))$, which will be correct in the case that the first iteration of \sample produced a good $x$, which happens w.p. approximately half.
+\invert, given $(x,y)\in \G$, will output $(x,\mathsf{sign}(y))$, which will be correct in the case that the first iteration of \sample produced a good $x$, which happens w.p. approximately half.
 
-
-We state the following theorem that is almost implicit in \cite{PS00}
+We also need that \schnorr is a proof of knowledge of discrete log. For this,
+we state the following theorem that is almost implicit in \cite{PS00}
 \begin{thm}[Extractability of Schnorr]\label{thm:extractSchnorr}
 There is an algorithm \ext with the following property.
 Fix any efficient \adv and group element $\g\in\G$. Suppose that \adv produces w.p. $\gamma$
@@ -993,7 +993,7 @@ is \negl.
 \end{claim}
 \begin{proof}
 Let \adv be an algorithm that after interacting with \oracle as described above outputs \ledger,\tx.
-Let \eps be the probability that \ledger, \tx satisfy the above.
+Let \eps be the probability that \ledger, \tx satisfy the above, and assume for contradiction $\eps = 1/\poly$.
 
 We construct \advprime that receives a randomized forgery challenge for \schnorr as described in Definition \ref{dfn:sigscheme},
 and with probability $\eps-\negl$ either
@@ -1010,7 +1010,7 @@ Then, from CR of \sighash, \NF,\notecom,\IVK and Theorem \ref{thm:schnorr-nf} th
 %For convenience we use the abbreviation $\g=\gsig$ in the rest of this proof.
 \advprime works as follows:
 \begin{enumerate}
-\item \advprime will receive a challenge \akstar for the signature scheme \schnorr from a party \oracle.
+\item \advprime will receive a challenge \akstar for the signature scheme \schnorr sampled by the procedure \sample described in Section \ref{sec:signatures}.
  \item \advprime chooses random $\nsk\in \G$ and sends to \adv the proof authorizing key $\pak=(\nsk,\ak)$ 
  \ariel{note that here we need to make a spending key that is not from the same seed \sk}
  \item When \adv makes a \signallinputs query $(\rawtx,\alphas)$ \advprime first checks that the proofs in \rawtx are valid (as \oracle does in the description of \signallinputs queries) and then answers with \sigs where $\sig_i\defeq \simprv(\ak+\alpha_i\cdot \gsig,\msg)$. If during invocations to \simprv, \simro is queried on a point on which \adv queried \RO, \advprime aborts. (Note that the point queried by \simro is $(R,\rk,\msg)$ for a uniform $R$ chosen only during the execution of \simprv, so the probability such a point was already queried is \negl.)
@@ -1026,9 +1026,9 @@ Then, from CR of \sighash, \NF,\notecom,\IVK and Theorem \ref{thm:schnorr-nf} th
 %  and $R'\defeq \set{\rk'_1,\ldots,\rk'_{\ell}}$ be the randomized public keys in the inputs of $\tx'$.
 %  \advprime checks if $R\cap R' \neq \emptyset$, i.e. $\rk_i=\rk'_j$ for some $i,j$.
 % In such a case, since $\rk_i = \rk'_j=\akstar + \alpha'_j\cdot \gsig$ where $\alpha'_j$ was part of a query of \adv to \advprime; \advprime knows the discrete log $\alpha'_j$ of $\rk_i-\akstar$, and therefore can output the forgery w.r.t randomization of \ak $(\alpha'_j,\sighash(\rawtx),\sig_i)$.
- \item Otherwise let \ext be the extractor guaranteed to exist for the combined party \set{\advprime,\adv,\oracle}\footnote{We make a crucial ideal assumption here that there is a one to one mapping from strings to group elements, and thus the only thing \ext this combined party should also include \oracle and thus \ext should have access to the in up to the point in
- step 5 where \adv outputted \tx.
- Except with probability \negl, \ext outputs for the input \inp in \tx a witness $\wit=(\note,\pak=(\ak,\nsk),\alpha,\path,\pos)$.
+ \item Otherwise, denote by $B$ the algorithm consisting of execution of all parties up to this point outputting \tx and \tx'. Note that $B$'s randomness consist of that of $\adv,\advprime,\RO$ used up to this point and that of $\sample$.
+ Let \ext be the extractor guaranteed to exist for $B$ for the input \inp in \tx. Recall that \ext requires $B$'s internal randomness to produce a SNARK witness. We can give \ext the randomness of \advprime,\adv,\RO used up to this point, but instead of using the actual randomness of \sample as input to \ext, we use the \invert method to obtain this state correctly from \ak with $1/\poly$ probability. 
+ With probability $1/\poly - \negl= 1/\poly$, \ext outputs for the input \inp in \tx a witness $\wit=(\note,\pak=(\ak,\nsk),\alpha,\path,\pos)$.
  Similarly there is an extractor \primeof{\ext} for the input $\inp'$ in $\tx'$ giving us a witness $\wit'=(\note',\pak'=(\ak',\nsk'),\alpha',\path',\pos')$. If \ext or \primeof{\ext} fails \advprime aborts.
 \item Let $\nk\defeq \nsk\cdot \gnk, \nk'\defeq \nsk'\cdot \gnk$.  We have \[\NF(\nk,\note,\pos) = \NF(\nk',\note',\pos')=\nf.\]
 If $\nk\neq\nk',\note\neq\note'$ or $\pos\neq \pos'$, \advprime outputs $(\nk,\note,\pos), (\nk',\note',\pos')$ as a collision of \NF.

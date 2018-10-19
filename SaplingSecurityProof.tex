@@ -162,6 +162,11 @@ Sapling Security Proof}
  \newcommand{\comm}[1]{\ensuremath{\mathsf{comm}_{#1}}\xspace}
  \newcommand{\defeq}{:=}
 
+\newcommand{\primeof}[1]{\ensuremath{#1 '}\xspace} 
+\newcommand{\beforeout}[1]{\ensuremath{D^{\mathsf{out}}_{<#1}}\xspace}
+\newcommand{\beforeoutprime}[1]{\ensuremath{D'^{\mathsf{out}}_{<#1}}\xspace}
+\newcommand{\beforein}[1]{\ensuremath{D_{<#1}}\xspace}
+\newcommand{\beforeinprime}[1]{\ensuremath{D'_{<#1}}\xspace}
 %\renewcommand{\prime}[1]{\ensuremath{#1'}\xspace}
 \newcommand{\inpwitness}{\ensuremath{\mathsf{inpwit}}\xspace}
 \newcommand{\inpnote}{\ensuremath{\mathsf{inpnote}}\xspace}
@@ -502,6 +507,17 @@ this means that the probability that
 is \negl.
 This is exactly what we had to prove.
 \end{proof}
+\newcommand{\sample}{\ensuremath{\mathrm{sample}}\xspace}
+\newcommand{\invert}{\ensuremath{\mathrm{invert}}\xspace}
+\paragraph{Invertible group samplers}
+We assume for our group \G we have an efficient procedure \sample that produces a group element in \G that is \negl-close to uniform,
+such that there is an efficient deterministic algoritm \invert that given the output of \sample, produces w.p $1/\poly$
+over the randomness of \sample, the randomness $r$ used in that execution. 
+
+Note that when \G is an elliptic curve group over \F such a pair $(\sample,\invert)$
+is having \sample try $\lambda$ iterations of: Choose random $x\in \F$, check if there exists some $(x,y)\in \G$, if so output one of the two such elements randomly; and otherwise try another random $x\in\F$.
+
+\invert, given $(x,y)\in \G$, will output $(x,\mathsf(sign)(y))$, which will be correct in the case that the first iteration of \sample produced a good $x$, which happens w.p. approximately half.
 
 
 We state the following theorem that is almost implicit in \cite{PS00}
@@ -600,14 +616,14 @@ Furthermore, \ext's running time will be $P(\lambda,1/\gamma)$ where $P$ is a po
 % \end{proof}
 
 \newcommand{\createaddr}{\ensuremath{\mathsf{createaddr}}\xspace}
-\newcommand{\makeinput}{\ensuremath{\mathsf{makeinput}}\xspace}
-\newcommand{\makeoutput}{\ensuremath{\mathsf{makeoutput}}\xspace}
-\newcommand{\makerandomizedoutput}{\ensuremath{\mathsf{makerandomizedoutput}}\xspace}
-\newcommand{\makeoutputandnote}{\ensuremath{\mathsf{makeoutputandnote}}\xspace}
-\newcommand{\maketx}{\ensuremath{\mathsf{maketx}}\xspace}
-\newcommand{\makerandomizedtx}{\ensuremath{\mathsf{makerandomizedtx}}\xspace}
-\newcommand{\bindvaltx}{\ensuremath{\mathsf{bindval}}\xspace}
-\newcommand{\signtx}[1]{\ensuremath{\mathsf{signtx}(#1)}\xspace}
+\newcommand{\makeinput}{\ensuremath{\mathbf{makeinp}}\xspace}
+\newcommand{\makeoutput}{\ensuremath{\mathbf{makeout}}\xspace}
+\newcommand{\makerandomizedoutput}{\ensuremath{\mathbf{makerandomizedout}}\xspace}
+\newcommand{\makeoutputandnote}{\ensuremath{\mathbf{makeoutputandnote}}\xspace}
+\newcommand{\maketx}{\ensuremath{\mathbf{maketx}}\xspace}
+\newcommand{\makerandomizedtx}{\ensuremath{\mathbf{makerandomizedtx}}\xspace}
+\newcommand{\bindvaltx}{\ensuremath{\mathbf{bindval}}\xspace}
+\newcommand{\signtx}[1]{\ensuremath{\mathbf{signtx}(#1)}\xspace}
 \newcommand{\notecom}{\ensuremath{\mathbf{NC}}\xspace}
 \newcommand{\valcom}{\ensuremath{\mathbf{VC}}\xspace}
 \newcommand{\esk}{\ensuremath{\mathsf{esk}}\xspace}
@@ -628,6 +644,7 @@ Furthermore, \ext's running time will be $P(\lambda,1/\gamma)$ where $P$ is a po
 \newcommand{\rcms}{\ensuremath{\overrightarrow{\mathsf{rcm}}}\xspace}
 \newcommand{\pak}{\ensuremath{\mathsf{pak}}\xspace}
 \newcommand{\ak}{\ensuremath{\mathsf{ak}}\xspace}
+\newcommand{\akstar}{\ensuremath{\mathsf{ak}^*}\xspace}
 \newcommand{\rcv}{\ensuremath{\mathsf{rcv}}\xspace}
 \newcommand{\rk}{\ensuremath{\mathsf{rk}}\xspace}
 \newcommand{\nk}{\ensuremath{\mathsf{nk}}\xspace}
@@ -694,7 +711,8 @@ Whenever discussing a function in the properties below, we always think of an in
 \item \valcom is collision-resistant.
 \item \sighash is collision-resistant.
 \item \IVK is collision-resistant.
-\item \NF is collision resistant; and has the structural property that $\NF(\nk,\note,\pos) = \RO(\nk,\notecom(\note),\pos)$ for some function \RO 
+\item \NF is collision resistant
+%and has the structural property that $\NF(\nk,\note,\pos) = \RO(\nk,\notecom(\note),\pos)$ for some function \RO 
 (see another requirement for the indistinguishability property in Section \ref{sec:indist}).
 \end{enumerate}
 
@@ -752,7 +770,7 @@ An \emph{input base}, usually denoted \input, will consist of the values require
 
 We say \input is \emph{consistent with \rt} if \path ends at \rt.
 
-A \emph{transaction input}, usually denoted \inp, is the final form an input appears in a transaction; \inp consists of 
+A \emph{transaction input}, usually denoted \inp, is the final form in which an input appears in a transaction; \inp consists of 
 \begin{enumerate}
  \item A value commitment \cv.
  \item A nullifier \nf.
@@ -774,9 +792,9 @@ where \input is an input base consistent with \rt.
 \begin{enumerate}
 \item \cm = \notecom(\note)
  \item \nf = \NF(\nk,\note,\pos)
- \item Define $\rk\defeq \ak +\alpha\cdot \g, \cv\defeq  \val\cdot \gv+ \rcv\cdot \gr $.
+ \item Define $\rk\defeq \ak +\alpha\cdot \gsig, \cv\defeq  \val\cdot \gv+ \rcv\cdot \gr $.
  \item Let $\prf = \provspend(\cv,\rt,\nf,\rk;\note,\pak,\alpha,\path,\pos)$.
- \item Output $(\cv,\rt,\nf,\rk,\pi)$.
+ \item Output $\inp=(\cv,\rt,\nf,\rk,\pi)$.
 \end{enumerate}
 
 \noindent
@@ -885,6 +903,7 @@ where $\input_j = (\val_j,\note_j,\pak_j,\path_j,\pos_j), \output_j =(\gd_j,\pk_
 
 We make the simplifying assumption when modelling non-malleability in this writeup; that \emph{there is only one spending key $(\ask,\nsk)$ of the honest signer  involved, and all addresses are diversifed addresses derived from this spending key}.
 \subsection*{Modelling the adversary:}
+
 We wish to show that the delegated spender cannot create any new transactions of her own.
 We model this claim with the following non-malleability game:
 We model the honest signer as an oracle \oracle that \adv interacts with as follows.
@@ -901,7 +920,7 @@ We model the honest signer as an oracle \oracle that \adv interacts with as foll
 
 
 \oracle begins by choosing a new spending key $(\ask,\nsk)\leftarrow \keyset$ and sending the corresponding proof authorizing key
-$\pak=(\ak,\nsk)$ to \adv.  Where $\ak=\ask\cdot \g$.
+$\pak=(\ak,\nsk)$ to \adv.  Where $\ak=\ask\cdot \gsig$.
 
 
 Afterwords, 
@@ -912,7 +931,7 @@ which intuitively correspond to asking for signatures on transactions whose inpu
  \item \adv sends $(\pretx=(\rawtx,\sigval),\alphas)$ to \oracle.
  Where $\rawtx = (\inps,\outs,\vbal)$
  \item \oracle checks if $\spendverify(\pubinp_i,\prf_i)$ holds for each $i\in [\ell]$ and otherwise aborts.
- \item  \oracle computes for $i\in [\ell]$, $\sig_i = \sign_{\g}(\ask+\alpha_i,\sighash(\rawtx))$.
+ \item  \oracle computes for $i\in [\ell]$, $\sig_i = \sign_{\gsig}(\ask+\alpha_i,\sighash(\rawtx))$.
  \item Let $\sigs\defeq (\sig_1,\ldots,\sig_\ell)$. \oracle return $\tx\defeq(\rawtx,\sigval,\sigs)$. 
 \end{enumerate}
 \begin{remark}
@@ -942,8 +961,8 @@ overlapping nullifiers with the transactions signed previously by \oracle; preci
 
 \begin{remark}\label{rem:weirdstuff}
  A somewhat odd thing about the construction with the delegated spender, is that valid transactions signed by \oracle, do not exactly correspond to transactions whose inputs \oracle knows the spending key of. We can only say \oracle and \adv \emph{together} know the spending key.
- For example, given $(\ak,\nsk)$, \adv can choose random $s\in \F$, set $\ak' \defeq \ak + s\cdot \g$.   
- Now when \adv wants to sign an input in address $\ak'$, i.e. with some randomized key $\rk = \ak'+ \alpha \g  = \ak + (s+\alpha)\cdot \g$,
+ For example, given $(\ak,\nsk)$, \adv can choose random $s\in \F$, set $\ak' \defeq \ak + s\cdot \gsig$.   
+ Now when \adv wants to sign an input in address $\ak'$, i.e. with some randomized key $\rk = \ak'+ \alpha \gsig  = \ak + (s+\alpha)\cdot \gsig$,
  it can give \oracle the randomization $\alpha' = s+\alpha$.
  
  A way to avoid these oddities is to have \oracle only sign transactions where he recognizes the nullifiers as belonging to a note of his.
@@ -988,27 +1007,30 @@ and with probability $\eps-\negl$ either
 
 
 Then, from CR of \sighash, \NF,\notecom,\IVK and Theorem \ref{thm:schnorr-nf} the claim follows.
-
+%For convenience we use the abbreviation $\g=\gsig$ in the rest of this proof.
 \advprime works as follows:
 \begin{enumerate}
-\item \advprime will receive a challenge \ak for the signature scheme \schnorr from a party \oracle.
+\item \advprime will receive a challenge \akstar for the signature scheme \schnorr from a party \oracle.
  \item \advprime chooses random $\nsk\in \G$ and sends to \adv the proof authorizing key $\pak=(\nsk,\ak)$ 
  \ariel{note that here we need to make a spending key that is not from the same seed \sk}
- \item When \adv makes a \signallinputs query $(\rawtx,\alphas)$ \advprime first checks that the proofs in \rawtx are valid (as \oracle does in the description of \signallinputs queries) and then answers with \sigs where $\sig_i\defeq \simprv(\pk+\alpha\cdot g,\msg)$. If during invocations to \simprv, \simro is queried on a point on which \adv queried \RO, \advprime aborts. (Note that the point queried by \simro is $(R,\pk,\msg)$ for a uniform $R$ chosen only during the execution of \simprv, so the probability such a point was already queried is \negl.)
+ \item When \adv makes a \signallinputs query $(\rawtx,\alphas)$ \advprime first checks that the proofs in \rawtx are valid (as \oracle does in the description of \signallinputs queries) and then answers with \sigs where $\sig_i\defeq \simprv(\ak+\alpha_i\cdot \gsig,\msg)$. If during invocations to \simprv, \simro is queried on a point on which \adv queried \RO, \advprime aborts. (Note that the point queried by \simro is $(R,\rk,\msg)$ for a uniform $R$ chosen only during the execution of \simprv, so the probability such a point was already queried is \negl.)
  \item When \advprime makes a query to \RO, \adv answers according to \RO unless the query has been answered according to \simro during invocations of \simprv in \signallinputs queries; in which case \advprime answers according to \simprv. (This doesn't change the distribution of \RO from the perspective of \adv.)
  \item When \adv outputs \ledger, \tx: \advprime checks that it indeed satisfies the challenge - that is 
   $\verifytx{\ledger}{\tx}$; \tx contains an input \inp with $\nf=\nfof{\inp}$ being equal to $\nf(\inp')$ for some $\inp'\in \tx'$ for some $\tx'\in T$;
-  appearing in one of the \signallinputs queries of \adv; and $\rawtx\notin \rawof{T}$. If not \advprime aborts.
-\item \advprime checks if  $\sighash(\rawtx)= \sighash(\rawtx')$ for some $\tx'\in T$ with $\rawtx'\neq \rawtx$. If so it outputs $(\rawtx,\rawtx')$ as a collision of \sighash.
- \item Let $R\defeq\set{\rk_1,\ldots,\rk_\ell}$ be the randomized public keys in the inputs of \tx,
- and $R'\defeq \set{\rk'_1,\ldots,\rk'_{\ell'}}$ be the randomized public keys in the inputs of \tx'.
- \advprime checks if $R'\cap R \neq \emptyset$, i.e. $\rk_i=\rk'_j$ for some $i,j$.
- In this case it outputs the forgery $(\alpha'_j,\sighash(\rawtx),\sig_i)$.
- \item Otherwise let \ext be the extractor guaranteed to exist for the combined party \advprime,\oracle up to the point in
+  appearing in one of the \signallinputs queries of \adv; and $\rawtx\notin \rawof{T}$. If not, \advprime aborts.
+\item \advprime checks if  $\sighash(\rawtx)= \sighash(\rawtx'')$ for some $\tx''\in T$ with $\rawtx\neq \rawtx''$. If so it outputs $(\rawtx,\rawtx'')$ as a collision of \sighash.
+%  \item Denote from now by \rk and \sig the public key and signature in \inp. Let $\msg \defeq \sighash(\rawtx)$.
+%  Since \msg is different from all the messages for which \adv received simulated signatured, \sig is a valid signature of \msg with key \rk. Thus, for \advprime to have a successful reply to the forgery challenge \akstar, it suffices 
+%  
+%  Let $R\defeq\set{\rk_1,\ldots,\rk_\ell}$ be the randomized public keys in the inputs of \tx,
+%  and $R'\defeq \set{\rk'_1,\ldots,\rk'_{\ell}}$ be the randomized public keys in the inputs of $\tx'$.
+%  \advprime checks if $R\cap R' \neq \emptyset$, i.e. $\rk_i=\rk'_j$ for some $i,j$.
+% In such a case, since $\rk_i = \rk'_j=\akstar + \alpha'_j\cdot \gsig$ where $\alpha'_j$ was part of a query of \adv to \advprime; \advprime knows the discrete log $\alpha'_j$ of $\rk_i-\akstar$, and therefore can output the forgery w.r.t randomization of \ak $(\alpha'_j,\sighash(\rawtx),\sig_i)$.
+ \item Otherwise let \ext be the extractor guaranteed to exist for the combined party \set{\advprime,\adv,\oracle}\footnote{We make a crucial ideal assumption here that there is a one to one mapping from strings to group elements, and thus the only thing \ext this combined party should also include \oracle and thus \ext should have access to the in up to the point in
  step 5 where \adv outputted \tx.
- Except with probability \negl, \ext outputs a witness $\wit=(\note,\pak=(\ak,\nsk),\alpha,\path,\pos)$.
- Similarly there is an extractor \ext' for the input \inp' in \tx' giving us a witness $\wit'=(\note',\pak'=(\ak',\nsk'),\alpha',\path',\pos')$.
-\item Let $\nk\defeq \nsk\cdot \g, \nk'\defeq \nsk'\cdot \g$.  We have \[\NF(\nk,\note,\pos) = \NF(\nk',\note',\pos')=\nf.\]
+ Except with probability \negl, \ext outputs for the input \inp in \tx a witness $\wit=(\note,\pak=(\ak,\nsk),\alpha,\path,\pos)$.
+ Similarly there is an extractor \primeof{\ext} for the input $\inp'$ in $\tx'$ giving us a witness $\wit'=(\note',\pak'=(\ak',\nsk'),\alpha',\path',\pos')$. If \ext or \primeof{\ext} fails \advprime aborts.
+\item Let $\nk\defeq \nsk\cdot \gnk, \nk'\defeq \nsk'\cdot \gnk$.  We have \[\NF(\nk,\note,\pos) = \NF(\nk',\note',\pos')=\nf.\]
 If $\nk\neq\nk',\note\neq\note'$ or $\pos\neq \pos'$, \advprime outputs $(\nk,\note,\pos), (\nk',\note',\pos')$ as a collision of \NF.
 % \item Otherwise, we have $\notecom(\note)=\notecom(\note')=\cm$.
 % If $\note \neq \note'$, \advprime outputs $\note,\note'$ as a collision of \notecom.
@@ -1022,11 +1044,11 @@ Thus, $\ivk=\ivk'$.
 If $\ak\neq \ak'$, \advprime outputs $(\ak,\nk),(\ak,\nk')$ as a collision of \IVK.
 
 \item Otherwise, we have $\ak=\ak'$.
- Now, \adv knows $\alpha^*$ such that $\rk' = \ak^* + \alpha^*\cdot \g$, where $\ak^*$ is from the forgery challenger (as he used $(\alpha^*,\sighash(\rawtx'))$ in the \signallinputs query for \tx' for input \inp').
-And also $\rk' = \ak' + \alpha'\cdot \g$.
-So $\ak=\ak'= \ak^* + (\alpha^*-\alpha')\cdot\g$.
-And $\rk = \ak^* +(\alpha^*-\alpha'+\alpha)\cdot \g$.
-Thus, in this case \advprime outputs $(\alpha^*-\alpha'+\alpha, \sigma, \sighash(\rawtx))$ as a signature forgery.
+ Now, \advprime knows $\alpha^*$ such that $\rk' = \ak^* + \alpha^*\cdot \gsig$, where $\ak^*$ was the forgery challenge from \oracle (as \adv used $(\alpha^*,\sighash(\rawtx'))$ in the \signallinputs query for \primeof{\tx} for input \primeof{\inp}).
+And also $\rk' = \ak' + \alpha'\cdot \gsig$.
+So $\ak=\ak'= \ak^* + (\alpha^*-\alpha')\cdot\gsig$.
+And $\rk = \ak^* +(\alpha^*-\alpha'+\alpha)\cdot \gsig$.
+Thus, in this case \advprime outputs $(\alpha^*-\alpha'+\alpha, \sighash(\rawtx), \sig )$ as a signature forgery.
  
 \end{enumerate}
 
@@ -1222,11 +1244,6 @@ Now to show they are identically distributed given a fixing of $\inp_{<i},\inp'_
  \end{itemize}
  
 \end{proof} 
-\newcommand{\primeof}[1]{\ensuremath{#1 '}\xspace} 
-\newcommand{\beforeout}[1]{\ensuremath{D^{\mathsf{out}}_{<#1}}\xspace}
-\newcommand{\beforeoutprime}[1]{\ensuremath{D'^{\mathsf{out}}_{<#1}}\xspace}
-\newcommand{\beforein}[1]{\ensuremath{D_{<#1}}\xspace}
-\newcommand{\beforeinprime}[1]{\ensuremath{D'_{<#1}}\xspace}
 We proceed with the elements of the the ouputs. It will be convenient now to view each element in $\out_j,\out'_j$ as 
 separate random variables $X_i,Y_i$, and show that 
 % for any fixing of $X_{<i},X'a_{<i}$

@@ -119,7 +119,7 @@
 
 \newcommand{\ate}[2]{\ensuremath{\mathsf{Ate_{opt}}(#1,#2)}\xspace}
 \title{%
-Sapling Security Proof}
+A security analysis of the Zcash Sapling Protocol}
 \author{Ariel Gabizon \and Daira Hopwood}
 \date{Zcash}
 \begin{document}
@@ -289,6 +289,30 @@ Sapling Security Proof}
 \newcommand{\oracle}{\ensuremath{\mathscr O}\xspace}
 \newcommand{\oracleprime}{\ensuremath{\mathscr O'}\xspace}
 \newcommand{\g}{\ensuremath{\mathsf{g}}\xspace}
+
+\section{Introduction}
+The purpose of this note is to show that the Sapling protocol, that will be used for Zcash shielded (private) transactions as of the Sapling network upgrade, satisfies certain security properties. This document is not completely self contained and while reading it we recommend referring often to the Zcash protocol spec\cite{spec} for full details of the Sapling protocol.
+
+
+A noteable property of the protocol is a separation of proving and signing authority. A ``delegated spender'' creates transaction with the help
+of a proof authorizing key (or just proving key for short), but the transaction is not valid until it is signed by the signer with the spending key, that roughly corresponds to the secret key when thinking of the proving key as a public key.
+
+We informally describe the four properties we prove.
+
+\begin{enumerate}
+ \item Non-malleability: The delegated spender, after receiving a set of signatures on transactions of his choice, should not be able to create a new valid transaction, containing a nullifier appearing in one of the old transactions (overlapping nullifiers intuitively correspond to transactions from the same spending key)
+ \item Indistinguishability: An adversary should not be able to find two tupples (input notes, output notes) that are consistent in public data - meaning mainly that the amount going in or our of the shielded pool is the same, such that it is possible to distinguish from seeing the transaction which tupple was used.
+ \item Balance: An adversary should not be able to construct a valid ledger (even when having full control of transactions inserted) such that the total amount coming out of the shielded pool is larger than what came in.
+ \item Spendability: An adversary should not be able to send the honest party a note that was successfully received, but cannot be later spent.
+\end{enumerate}
+
+Before getting into the Sapling protocol and these properties, we begin with a preliminary definitions and result regarding signature schemes.
+
+
+
+
+
+
 
 \section{Signature schemes}\label{sec:signatures}
 %We assume all parties below have access to a random oracle \RO taking arbitrary strings as input and outputting uniform elements of \F.

@@ -300,8 +300,8 @@ of a proof authorizing key (or just proving key for short), but the transaction 
 We informally describe the four properties we prove.
 
 \begin{enumerate}
- \item \textbf{Non-malleability}: The delegated spender, after receiving a set of signatures on transactions of his choice, should not be able to create a new valid transaction, containing a nullifier appearing in one of the old transactions (overlapping nullifiers intuitively correspond to transactions from the same spending key)
- \item \textbf{Indistinguishability}: An adversary should not be able to find two tupples (input notes, output notes) that are consistent in public data - meaning mainly that the amount going in or our of the shielded pool is the same, such that it is possible to distinguish from seeing the transaction which tupple was used.
+ \item \textbf{Non-malleability}: The delegated spender, after receiving a set of signatures on transactions of his choice, should not be able to create a new valid transaction, containing a nullifier appearing in one of the old transactions (overlapping nullifiers intuitively correspond to transactions from the same spending key). The way non-malleability is defined and proved here is inspired from the Zerocash paper\cite{zerocash}
+ \item \textbf{Indistinguishability}: An adversary should not be able to find two tupples (input notes, output notes) that are consistent in public data - meaning mainly that the amount going in or our of the shielded pool is the same, such that it is possible to distinguish from seeing the transaction which tupple it corresponds to.
  \item \textbf{Balance}: An adversary should not be able to construct a valid ledger (even when having full control of transactions inserted) such that the total amount coming out of the shielded pool is larger than what came in.
  \item \textbf{Spendability}: An adversary should not be able to send the honest party a note that was successfully received, but cannot be later spent.
 \end{enumerate}
@@ -544,7 +544,7 @@ is having \sample try $\lambda$ iterations of: Choose random $x\in \F$, check if
 \invert, given $(x,y)\in \G$, will output $(x,\mathsf{sign}(y))$, which will be correct in the case that the first iteration of \sample produced a good $x$, which happens w.p. approximately half.
 
 We also need that \schnorr is a proof of knowledge of discrete log. For this,
-we state the following theorem that is almost implicit in \cite{PS00}
+we state the following theorem that is almost implicit in \cite{schnorrSecurity}
 \begin{thm}[Extractability of Schnorr]\label{thm:extractSchnorr}
 There is an algorithm \ext with the following property.
 Fix any efficient \adv and group element $\g\in\G$. Suppose that \adv produces w.p. $\gamma$
@@ -1629,6 +1629,8 @@ and \advprime outputs $(\alpha, \rawtx, \sig)$ as a forgery of \schnorr with cha
 % private key \sk
 % public key $[\sk]\cdot \g$
 % encryption of $x$: [\sk]
+\section*{Acknowledgements}
+We thank Matthew D. Green for conversations on simulation extractability that inspired in particular the definition and use of invertible group samplers.
 \bibliography{refs}
 \bibliographystyle{plain}
 \end{document}

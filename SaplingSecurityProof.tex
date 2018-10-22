@@ -17,7 +17,7 @@
 %\usepackage{numdef}
 %\usepackage{enumitem}
 \usepackage{amsopn}
-\usepackage{url,hyperref}  
+\usepackage{url,hyperref,enumitem}  
 \providecommand{\sqbinom}{\genfrac{\lbrack}{\rbrack}{0pt}{}}
 \DeclareMathOperator{\spn}{span}
 
@@ -456,10 +456,10 @@ is \negl.
 \paragraph{Simulating:}
 \begin{itemize}
 \item $\simro(\str)$ checks if \str has been queried before; if so answers consistently, otherwise answers uniformly in \F and records the answer. 
- \item $\simprv(\pk,\msg)$: Choose uniform $c,u \in \F$.
- Let $\str \defeq (\pk,\msg, u\cdot g - c\cdot \pk)$.
+ \item $\simprv(\pk,\msg)$: Choose uniform $c,u \in \F$. Define $R\defeq u\cdot g - c\cdot \pk$
+ and $\str \defeq (R , \pk,\msg )$.
  Check if $\simro(\str)$ has been defined.
- If so, abort.  Otherwise define $\simro(\str)=c$ and return $(c,u)$.
+ If so, abort.  Otherwise define $\simro(\str)=c$ and return $(R,u)$.
 \end{itemize}
 \begin{remark}
  At times when we wish to change the parameter $g$ we work with from default to an element $h$,
@@ -669,6 +669,7 @@ Furthermore, \ext's running time will be $P(\lambda,1/\gamma)$ where $P$ is a po
 \newcommand{\pak}{\ensuremath{\mathsf{pak}}\xspace}
 \newcommand{\ak}{\ensuremath{\mathsf{ak}}\xspace}
 \newcommand{\akstar}{\ensuremath{\mathsf{ak}^*}\xspace}
+\newcommand{\alphastar}{\ensuremath{\mathsf{\alpha}^*}\xspace}
 \newcommand{\rcv}{\ensuremath{\mathsf{rcv}}\xspace}
 \newcommand{\rk}{\ensuremath{\mathsf{rk}}\xspace}
 \newcommand{\nk}{\ensuremath{\mathsf{nk}}\xspace}
@@ -1038,11 +1039,14 @@ Then, from CR of \sighash, \NF,\notecom,\IVK and Theorem \ref{thm:schnorr-nf} th
  \item \advprime chooses random $\nsk\in \G$ and sends to \adv the proof authorizing key $\pak=(\nsk,\ak)$ 
  \ariel{note that here we need to make a spending key that is not from the same seed \sk}
  \item When \adv makes a \signallinputs query $(\rawtx,\alphas)$ \advprime first checks that the proofs in \rawtx are valid (as \oracle does in the description of \signallinputs queries) and then answers with \sigs where $\sig_i\defeq \simprv(\ak+\alpha_i\cdot \gsig,\msg)$. If during invocations to \simprv, \simro is queried on a point on which \adv queried \RO, \advprime aborts. (Note that the point queried by \simro is $(R,\rk,\msg)$ for a uniform $R$ chosen only during the execution of \simprv, so the probability such a point was already queried is \negl.)
- \item When \advprime makes a query to \RO, \adv answers according to \RO unless the query has been answered according to \simro during invocations of \simprv in \signallinputs queries; in which case \advprime answers according to \simprv. (This doesn't change the distribution of \RO from the perspective of \adv.)
+ \item When \advprime makes a query to \RO, \adv answers according to \RO unless the query has already been answered according to \simro during invocations of \simprv in \signallinputs queries; in which case \advprime answers according to \simro. (This doesn't change the distribution of \RO from the perspective of \adv.)
  \item When \adv outputs \ledger, \tx: \advprime checks that it indeed satisfies the challenge - that is 
   $\verifytx{\ledger}{\tx}$; \tx contains an input \inp with $\nf=\nfof{\inp}$ being equal to $\nf(\inp')$ for some $\inp'\in \tx'$ for some $\tx'\in T$;
   appearing in one of the \signallinputs queries of \adv; and $\rawtx\notin \rawof{T}$. If not, \advprime aborts.
 \item \advprime checks if  $\sighash(\rawtx)= \sighash(\rawtx'')$ for some $\tx''\in T$ with $\rawtx\neq \rawtx''$. If so it outputs $(\rawtx,\rawtx'')$ as a collision of \sighash.
+\end{enumerate}
+
+\textit{Explanation of where we are so far:} Denote by \rk and \sig the public key and signature in \inp. Let $\msg \defeq \sighash(\rawtx)$. \sig is a valid signature for message \msg and public key \rk, and \msg was never signed in reply to the \signallinputs queries by \oracle. To obtain a forgery w.r.t randomizatoin for the challenge \akstar, what is left is to find the \alphastar such that $\rk=\akstar+\alphastar\cdot \gsig$. The purpose of the next steps is to obtain such \alphastar or a collision of one of our CRH functions.
 %  \item Denote from now by \rk and \sig the public key and signature in \inp. Let $\msg \defeq \sighash(\rawtx)$.
 %  Since \msg is different from all the messages for which \adv received simulated signatured, \sig is a valid signature of \msg with key \rk. Thus, for \advprime to have a successful reply to the forgery challenge \akstar, it suffices 
 %  
@@ -1050,7 +1054,8 @@ Then, from CR of \sighash, \NF,\notecom,\IVK and Theorem \ref{thm:schnorr-nf} th
 %  and $R'\defeq \set{\rk'_1,\ldots,\rk'_{\ell}}$ be the randomized public keys in the inputs of $\tx'$.
 %  \advprime checks if $R\cap R' \neq \emptyset$, i.e. $\rk_i=\rk'_j$ for some $i,j$.
 % In such a case, since $\rk_i = \rk'_j=\akstar + \alpha'_j\cdot \gsig$ where $\alpha'_j$ was part of a query of \adv to \advprime; \advprime knows the discrete log $\alpha'_j$ of $\rk_i-\akstar$, and therefore can output the forgery w.r.t randomization of \ak $(\alpha'_j,\sighash(\rawtx),\sig_i)$.
- \item Otherwise, denote by $B$ the algorithm consisting of execution of all parties up to this point outputting \tx and \primeof{\tx}. Note that $B$'s randomness consists of that of $\adv,\advprime,\RO$ used up to this point and the randomness of $\sample$.
+\begin{enumerate}[resume]
+ \item Otherwise, denote by $B$ the algorithm consisting of execution of all parties up to this point outputting \tx and \primeof{\tx}. Note that $B$'s randomness consists\footnote{We have not defined collision-resistant functions too formally. To be more accurate we assume all CRH functions are ``public'' in the sense that their seed is just a random string, and this randomness is also one of the inputs to $B$.} of that of $\adv,\advprime,\RO$ used up to this point and the randomness of $\sample$.
  Let \ext be the extractor guaranteed to exist for $B$ for the input \inp in \tx. Recall that \ext requires $B$'s internal randomness to produce a SNARK witness. \advprime can give \ext the randomness of \advprime,\adv,\RO used up to this point, but instead of using the actual randomness of \sample as input to \ext, \advprime uses the \invert method to obtain this randomness correctly from \ak with $1/\poly$ probability. Given this input, with probability $1/\poly - \negl= 1/\poly$, \ext outputs for the input \inp in \tx a witness $\wit=(\note,\pak=(\ak,\nsk),\alpha,\path,\pos)$.
  Similarly there is an extractor \primeof{\ext} for the input $\inp'$ in $\tx'$ giving us a witness $\wit'=(\note',\pak'=(\ak',\nsk'),\alpha',\path',\pos')$. If \ext or \primeof{\ext} fails \advprime aborts (note that the probability of both succeeding is $1/\poly$).
 \item Let $\nk\defeq \nsk\cdot \gnk, \nk'\defeq \nsk'\cdot \gnk$.  We have \[\NF(\nk,\note,\pos) = \NF(\nk',\note',\pos')=\nf.\]
@@ -1071,7 +1076,7 @@ If $\ak\neq \ak'$, \advprime outputs $(\ak,\nk),(\ak,\nk')$ as a collision of \I
 And also $\rk' = \ak' + \alpha'\cdot \gsig$.
 So $\ak=\ak'= \ak^* + (\alpha^*-\alpha')\cdot\gsig$.
 And $\rk = \ak^* +(\alpha^*-\alpha'+\alpha)\cdot \gsig$.
-Thus, in this case \advprime outputs $(\alpha^*-\alpha'+\alpha, \sighash(\rawtx), \sig )$ as a signature forgery.
+Thus, in this case \advprime outputs $(\alpha^*-\alpha'+\alpha, \sighash(\rawtx), \sig )$ as a signature forgery w.r.t randomization of \akstar.
  
 \end{enumerate}
 
@@ -1080,61 +1085,61 @@ Thus, in this case \advprime outputs $(\alpha^*-\alpha'+\alpha, \sighash(\rawtx)
 \newcommand{\curnotes}{\ensuremath{\mathsf{N}}\xspace}
 
 \newcommand{\maketransaction}{\ensuremath{\mathsf{maketransaction}}\xspace}
-\subsection{Modelling the outside adversary}
-
-\underline{$\maketransaction(\inputs,\outputs,\vbal,\ask)$}:
-\begin{enumerate}
- \item For $i\in [\ell]$, check where $\input_i$ appears in the compute $\input_i\defeq \makeinput({{\inp}}_i)$.
-\item Check that $\sum_{i=1}^\ell \val_i - \sum_{j=1}^s \outval_j=\vbal$.
-If this is the case then $(\inputs,\outputs,\vbal)$ is a \emph{valid input} to \maketransaction.
-Otherwise output \rej and abort.
- \item For $j\in [s]$, compute $\output_j \defeq \makeoutput({\out_j})$.
- \item Choose uniform $\rcvs\in \F^s$ and output $\signallinputs(\maketx{(\inputs,\outputs,\vbal,\rcvs)},\ask)$
- 
-\end{enumerate}
-
-\oracle begins by choosing a uniform spending key $(\ask,\nsk)\in\keyset$.
-And generates the corresponding keys $\ak\defeq \ask\cdot \g ,\nk\defeq \nsk\cdot\g, \ivk \defeq\IVK(\ak,\nk)$. 
-\adv and \oracle initialize an empty set $T$ of diversified addresses.
-% \adv and \oracle initialize an empty merkle tree \tree
- \adv and \oracle initialize an empty set of current notes \curnotes. 
-\adv can make two kinds of queries.
-
-\paragraph{Get new diversified address queries}
-\begin{itemize}
-\item\oracle chooses $\gd\in \G$ according to the distribution \GH of the group hash output.
-\item\oracle then outputs the diversified address $(\gd,\pk \defeq \ivk\cdot \gd)$.
-\item \adv and \oracle add $(\gd,\pk)$ to the set of diversified addresses $T$.
-\end{itemize}
-\paragraph{Make transaction queries}
-\begin{itemize}
-\item \adv chooses extended input notes $\input_1,\ldots,\input_\ell\in\curnotes$.
-\item \adv chooses output notes $\output_1,\ldots,\output_s$, with $\output_j = (\gd_j,\pk_j,\val_j,\rcm_j)$, for $(\gd_j,\pk_j)\in T$.
-\item \adv Chooses uniform $\rcvs\in \F^{s+\ell}$.
-\item \adv sends $(\inputs,\outputs,\rcvs)$ to \oracle.
-% \item \oracle computes $\inputs$ with $\inp_j\defeq \makeinput(\input_j)$, and $(\note_j,\out_j)= \makeoutputandnote(\output_j)$.
-\item \oracle returns $\tx\defeq \maketx(\inputs,\outputs,\rcvs,\ask,\pak)$ to \adv.
-\item \adv and \oracle add $\output_j$ to \curnotes for each $j$ s.t. $(\gd_j,\pk_j)\in T$.
-\item \adv and \oracle remove the elements of \inputs from \curnotes.
-\end{itemize}
-
-
- 
-\subsection{Non-malleability w.r.t outside adversary}
-\begin{claim}\label{clm:nmal-sapling-outside}
- Suppose \adv interacts with \oracle as described above.
- Then it outputs a transaction $(\ledger,\tx,\inp\in\tx)$.
- The probability that there exists $\tx'\in T,\inp'\in \inputs(\tx')$ such that 
- \begin{enumerate}
-  \item $\rawof{\tx}\neq \rawof{\tx'},\forall \tx'\in T$.
-  \item $\nf(\inp)=\nf(\inp')$.
- \end{enumerate}
-is \negl.
-\end{claim}
-\begin{proof}
-Reduce to Claim \ref{clm:nmal-sapling}.
-We
-\end{proof}
+% \subsection{Modelling the outside adversary}
+% 
+% \underline{$\maketransaction(\inputs,\outputs,\vbal,\ask)$}:
+% \begin{enumerate}
+%  \item For $i\in [\ell]$, check where $\input_i$ appears in the compute $\input_i\defeq \makeinput({{\inp}}_i)$.
+% \item Check that $\sum_{i=1}^\ell \val_i - \sum_{j=1}^s \outval_j=\vbal$.
+% If this is the case then $(\inputs,\outputs,\vbal)$ is a \emph{valid input} to \maketransaction.
+% Otherwise output \rej and abort.
+%  \item For $j\in [s]$, compute $\output_j \defeq \makeoutput({\out_j})$.
+%  \item Choose uniform $\rcvs\in \F^s$ and output $\signallinputs(\maketx{(\inputs,\outputs,\vbal,\rcvs)},\ask)$
+%  
+% \end{enumerate}
+% 
+% \oracle begins by choosing a uniform spending key $(\ask,\nsk)\in\keyset$.
+% And generates the corresponding keys $\ak\defeq \ask\cdot \g ,\nk\defeq \nsk\cdot\g, \ivk \defeq\IVK(\ak,\nk)$. 
+% \adv and \oracle initialize an empty set $T$ of diversified addresses.
+% % \adv and \oracle initialize an empty merkle tree \tree
+%  \adv and \oracle initialize an empty set of current notes \curnotes. 
+% \adv can make two kinds of queries.
+% 
+% \paragraph{Get new diversified address queries}
+% \begin{itemize}
+% \item\oracle chooses $\gd\in \G$ according to the distribution \GH of the group hash output.
+% \item\oracle then outputs the diversified address $(\gd,\pk \defeq \ivk\cdot \gd)$.
+% \item \adv and \oracle add $(\gd,\pk)$ to the set of diversified addresses $T$.
+% \end{itemize}
+% \paragraph{Make transaction queries}
+% \begin{itemize}
+% \item \adv chooses extended input notes $\input_1,\ldots,\input_\ell\in\curnotes$.
+% \item \adv chooses output notes $\output_1,\ldots,\output_s$, with $\output_j = (\gd_j,\pk_j,\val_j,\rcm_j)$, for $(\gd_j,\pk_j)\in T$.
+% \item \adv Chooses uniform $\rcvs\in \F^{s+\ell}$.
+% \item \adv sends $(\inputs,\outputs,\rcvs)$ to \oracle.
+% % \item \oracle computes $\inputs$ with $\inp_j\defeq \makeinput(\input_j)$, and $(\note_j,\out_j)= \makeoutputandnote(\output_j)$.
+% \item \oracle returns $\tx\defeq \maketx(\inputs,\outputs,\rcvs,\ask,\pak)$ to \adv.
+% \item \adv and \oracle add $\output_j$ to \curnotes for each $j$ s.t. $(\gd_j,\pk_j)\in T$.
+% \item \adv and \oracle remove the elements of \inputs from \curnotes.
+% \end{itemize}
+% 
+% 
+%  
+% \subsection{Non-malleability w.r.t outside adversary}
+% \begin{claim}\label{clm:nmal-sapling-outside}
+%  Suppose \adv interacts with \oracle as described above.
+%  Then it outputs a transaction $(\ledger,\tx,\inp\in\tx)$.
+%  The probability that there exists $\tx'\in T,\inp'\in \inputs(\tx')$ such that 
+%  \begin{enumerate}
+%   \item $\rawof{\tx}\neq \rawof{\tx'},\forall \tx'\in T$.
+%   \item $\nf(\inp)=\nf(\inp')$.
+%  \end{enumerate}
+% is \negl.
+% \end{claim}
+% \begin{proof}
+% Reduce to Claim \ref{clm:nmal-sapling}.
+% We
+% \end{proof}
 \subsection{Indistinguishability w.r.t outside adversaries}\label{sec:indist}
 For a sequence of random variables $X_1,\ldots,X_n$ it will be convenient in this section to denote  
 $X_{<i}\defeq (X_1,\ldots,X_{i-1})$.
@@ -1630,7 +1635,7 @@ and \advprime outputs $(\alpha, \rawtx, \sig)$ as a forgery of \schnorr with cha
 % public key $[\sk]\cdot \g$
 % encryption of $x$: [\sk]
 \section*{Acknowledgements}
-We thank Matthew D. Green for conversations on simulation extractability that inspired in particular the definition and use of invertible group samplers.
+We thank Matthew D. Green for conversations on simulation extractability that in particular 	inspired the definition and use of invertible group samplers.
 \bibliography{refs}
 \bibliographystyle{plain}
 \end{document}

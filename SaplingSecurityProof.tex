@@ -317,7 +317,7 @@ Before getting into the Sapling protocol and these properties, we begin with a p
 \section{Signature schemes}\label{sec:signatures}
 %We assume all parties below have access to a random oracle \RO taking arbitrary strings as input and outputting uniform elements of \F.
 
-When we say an algorithm \adv is \emph{efficient}, when mean it runs in time \poly for the ``security parameter'' $\lambda$.
+When we say an algorithm \adv is \emph{efficient}, we mean it runs in time \poly for the ``security parameter'' $\lambda$.
 
 
  \begin{dfn}\label{dfn:sigscheme}
@@ -1140,7 +1140,7 @@ Thus, in this case \advprime outputs $(\alpha^*-\alpha'+\alpha, \sighash(\rawtx)
 % Reduce to Claim \ref{clm:nmal-sapling}.
 % We
 % \end{proof}
-\subsection{Indistinguishability w.r.t outside adversaries}\label{sec:indist}
+\section{Indistinguishability w.r.t outside adversaries}\label{sec:indist}
 For a sequence of random variables $X_1,\ldots,X_n$ it will be convenient in this section to denote  
 $X_{<i}\defeq (X_1,\ldots,X_{i-1})$.
 Let us say that random variables $X,Y$ are $\gamma$-independent if for

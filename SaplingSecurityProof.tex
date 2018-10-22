@@ -294,19 +294,19 @@ A security analysis of the Zcash Sapling Protocol}
 The purpose of this note is to show that the Sapling protocol, that will be used for Zcash shielded (private) transactions as of the Sapling network upgrade, satisfies certain security properties. This document is not completely self contained and while reading it we recommend referring often to the Zcash protocol spec\cite{spec} for full details of the Sapling protocol.
 
 
-A noteable property of the protocol is a separation of proving and signing authority. A ``delegated spender/prover'' creates transaction with the help
+A noteable property of the protocol is a separation of proving and signing authority. A ``delegated spender/prover'' creates transactions with the help
 of a proof authorizing key (or just proving key for short), but the transaction is not valid until it is signed by the signer with the spending key, that roughly corresponds to the secret key when thinking of the proving key as a public key.
 
 We informally describe the four properties we prove.
 
 \begin{enumerate}
- \item \textbf{Non-malleability}: The delegated spender, after receiving a set of signatures on transactions of his choice, should not be able to create a new valid transaction, containing a nullifier appearing in one of the old transactions (overlapping nullifiers intuitively correspond to transactions from the same spending key). The way non-malleability is defined and proved here is inspired from the Zerocash paper\cite{zerocash}
- \item \textbf{Indistinguishability}: An adversary should not be able to find two tupples (input notes, output notes) that are consistent in public data - meaning mainly that the amount going in or our of the shielded pool is the same, such that it is possible to distinguish from seeing the transaction which tupple it corresponds to.
+ \item \textbf{Non-malleability}: The delegated spender, after receiving a set of signatures on transactions of his choice, should not be able to create a new valid transaction, containing a nullifier appearing in one of the old transactions (overlapping nullifiers intuitively correspond to transactions from the same spending key). The way non-malleability is defined and proved here is inspired from the Zerocash paper\cite{zerocash}.
+ \item \textbf{Indistinguishability}: An adversary should not be able to find two tupples (input notes, output notes) that are consistent in public data - meaning mainly that the amount going in or out of the shielded pool is the same, such that it is possible to distinguish from seeing the transaction which tupple it corresponds to.
  \item \textbf{Balance}: An adversary should not be able to construct a valid ledger (even when having full control of transactions inserted) such that the total amount coming out of the shielded pool is larger than what came in.
- \item \textbf{Spendability}: An adversary should not be able to send the honest party a note that was successfully received, but cannot be later spent.
+ \item \textbf{Spendability}: An adversary should not be able to send the honest party a note that was successfully received, but cannot be later spent (such an attack on \cite{zerocash} was found by Zooko Wilcox and coined ``Faerie Gold'' in \cite{spec}).
 \end{enumerate}
 
-Before getting into the Sapling protocol and these properties, we begin with a preliminary definitions and result regarding signature schemes.
+Before getting into the Sapling protocol and these properties, we begin with preliminary definitions and results regarding signature schemes.
 
 
 

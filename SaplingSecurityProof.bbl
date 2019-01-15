@@ -1,0 +1,28 @@
+\begin{thebibliography}{1}
+
+\bibitem{zerocash}
+E.~Ben{-}Sasson, A.~Chiesa, C.~Garman, M.~Green, I.~Miers, E.~Tromer, and
+  M.~Virza.
+\newblock Zerocash: Decentralized anonymous payments from bitcoin.
+\newblock In {\em 2014 {IEEE} Symposium on Security and Privacy, {SP} 2014,
+  Berkeley, CA, USA, May 18-21, 2014}, pages 459--474, 2014.
+\newblock DBLP:conf/sp/2014.
+
+\bibitem{rerandSig}
+N.~Fleischhacker, J.~Krupp, G.~Malavolta, J.~Schneider, D.~Schr{\"{o}}der, and
+  M.~Simkin.
+\newblock Efficient unlinkable sanitizable signatures from signatures with
+  re-randomizable keys.
+\newblock {\em {IET} Information Security}, 12(3):166--183, 2018.
+
+\bibitem{spec}
+D.~Hopwood, S.~Bowe, T.~Hornby, and N.~Wilcox.
+\newblock Zcash protocol spec -
+  https://github.com/zcash/zips/blob/master/protocol/protocol.pdf.
+
+\bibitem{schnorrSecurity}
+D.~Pointcheval and J.~Stern.
+\newblock Security arguments for digital signatures and blind signatures.
+\newblock {\em J. Cryptology}, 13(3):361--396, 2000.
+
+\end{thebibliography}

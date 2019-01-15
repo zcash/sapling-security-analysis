@@ -533,38 +533,45 @@ Furthermore, \ext's running time will be $P(\lambda,1/\gamma)$ where $P$ is a po
   We call \rand \emph{good} if $\adv(\rand)$ outputs a verifying $(\pk,\msg,\sig)$.
   We assume for simplicity that whenever \rand is good \adv queries \RO at $(R,\pk,\msg)$ where $\sig = (R,u)$.
   (Otherwise \ext can simulate an altered \adv that asks this query whenever \rand is good and the query hasn't been made yet.)
-  For good \rand we define an index $i(\rand)\in [Q]$ where the query $(R,\pk,\msg)$ was made. 
-  For $i\in [Q]$ and $\rand\in\F^Q$ we define the subset \bigset{\rand}{i} of $\F^Q$ to be the set of $x \in \F^Q$ that are equal to \rand outside of index $i$.
+  For good \rand we define the index $i(\rand)\in [Q]$ where the query $(R,\pk,\msg)$ was made. 
+  For $i\in [Q]$ and $\rand\in\F^Q$ we define the subset \bigset{\rand}{i} of $\F^Q$ to be the set of $\rand' \in \F^Q$ that are equal to \rand outside of index $i$.
   We denote by \goodset{\rand}{i} the set of $\rand'\in \F^Q$ that are contained in \bigset{\rand}{i}, are good, and have $i(\rand')=i$.
-  Note that given two distinct elements $\rand\neq \rand'\in\goodset{\rand}{i}$, the executions $\adv(\rand),\adv(\rand')$ give use two valid signatures with the same public key \pk and first part $R$;
+   Note that there are at most $r^{Q-1}\cdot Q$ distinct sets \goodset{\rand}{i}.
+ 
+ Note also that given two distinct elements $\rand\neq \rand'\in\goodset{\rand}{i}$, the executions $\adv(\rand),\adv(\rand')$ give us two valid signatures with the same public key \pk message \msg and first part $R$;
   and such two signatures enable computing \sk.
   
  Define the two functions
-   Note that there are at most $r^{Q-1}\cdot Q$ distinct sets \goodset{\rand}{i}.
-   \[T=\lceil \frac{\ln 3 P }{2}\rceil, P = 4Q/\gamma.\]
+   \[ P = 4Q/\gamma, T=\lceil \ln 3 P /2\rceil.\]
   Given \rand and \adv, \ext does the following.
   \begin{enumerate}
   \item If \rand is not good, abort.
-  \item If $\lambda$ is such that $r(lambda)< P(\lambda)$ conduct a brute for search for \sk such that $\sk\cdot \g = \pk$.
-   \item Otherwise, set $i=i(\rand)$. Sample $T$ elements $rand\in \bigset{\rand}{i}$.
+  \item If $\lambda$ is such that $r(\lambda)< P(\lambda)$ conduct a brute for search for \sk such that $\sk\cdot \g = \pk$.
+   \item Otherwise, set $i=i(\rand)$. Sample $T$ elements $\rand\in \bigset{\rand}{i}$.
    \item If one of the sampled elements is good and different from \rand, use it to compute and output \sk
     \end{enumerate}
-  We claim \ext retrieves \sk with probability at least $\gamma/2$:
-  Fix good \rand and let $i=i(\rand)$. Suppose that 
+  We claim \ext retrieves \sk with probability at least $\gamma/2$. This claim will follow from two subclaims described below.
+  Fix good \rand and let $i=i(\rand)$.
+   Suppose that 
   \[|\goodset{\rand}{i}|\geq |\bigset{\rand}{i}|/P\]
-  First, we show that given \rand, \ext succeeds w.p. at least $2/3$ over its inner randomness.
+  We first show that given \rand, \ext succeeds w.p. at least $2/3$ over its inner randomness.
   The event that \ext fails implies in $T$ samples of \bigset{\rand}{i} it didn't find a distinct $\rand'\in \goodset{\rand}{i}$. This probability is bounded by
-  \[(1-(1/P+1/r))^T \leq (1-1/2P)^T \leq e^{-T/2P)\leq 1/3\]
-  Next, we bound the probability of $\rand\in R^Q$ belonging to a set \goodset{\rand}{i}
+  \[(1-(1/P+1/r))^T \leq (1-1/2P)^T \leq e^{-T/2P}\leq 1/3.\]
+  
+  
+  Next, we bound the probability of $\rand\in \F^Q$ belonging to a set \goodset{\rand}{i}
   of density smaller than $1/P$ in \bigset{\rand}{i}.
   The number of such \rand is at most
-  \[\frac{r}{P}\cdot \frac{r^{Q-1}\cdot Q}\leq \frac{r^Q\cdot Q}{P}\]
+  \[ r^{Q-1}Q \cdot \frac{r}{P}\leq \frac{r^Q\cdot Q}{P}.\]
   Thus the density of such elements is at most
-  \[Q/P\leq \gamma/4\]
-  Finally, the probability of \ext succeeding is at least the probability of \rand being in
-  one of the high density sets multiplied by the probability of success conditioned on that, which gives success probability at least
-  \[(3\gamma/4)\cdot (2/3) = \gamma/2\]  
+  \[Q/P\leq \gamma/4.\]
   
+  Now using these two subclaims, the probability of \ext succeeding to output \sk is at least the probability of \rand being good and in
+  a set \goodset{\rand}{i} of density at least $1/P$ in \bigset{\rand}{i}; multiplied by the probability of success conditioned on that. This gives success probability at least
+  \[(3\gamma/4)\cdot (2/3) = \gamma/2.\]  
+  
+  
+  Finally, if \adv is randomized, running \ext as above when \adv is fixed to whatever inner randomness it used and \ext received as input, gives the same success probability of \ext for randomized \adv.
   
   \end{proof}
 

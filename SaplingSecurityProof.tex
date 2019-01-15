@@ -514,14 +514,14 @@ is having \sample try $\lambda$ iterations of: Choose random $x\in \F$, check if
 We also need that \schnorr is a proof of knowledge of discrete log. For this,
 we state the following theorem that is almost implicit in \cite{schnorrSecurity}, but we provide a proof for completeness.
 \begin{thm}[Extractability of Schnorr]\label{thm:extractSchnorr}
-Fix any integer polynomial function $\gamma=\gamma(\lambda)$ with $0\leq \gamma(\lambda)\leq 1$ for any $\lambda$.
+Fix any integer function $\gamma=\gamma(\lambda)$ with $0\leq \gamma(\lambda)\leq 1$ for any $\lambda$.
 There is an algorithm \ext with the following property.
 Fix any efficient \adv and group element $\g\in\G$. Suppose that \adv produces w.p. $\gamma$
 $(\pk,\msg,\sig)$ such that $\versig^{\RO}_{\g}(\pk,\msg,\sig)$.
 Then, given the internal randomness used by \adv in the run and the vector \rand of replies of \RO,
 \ext produces w.p $\gamma/2$ over (\adv)'s randomness, the randomness of \RO in answering (\adv)'s queries and its own randomness $s\in\F$ such that
 $\pk = s\cdot \g$.
-Furthermore, \ext's running time will be $P(\lambda,1/\gamma)$ where $P$ is a polynomial depending on the running time of \adv.
+Furthermore, \ext's running time will be $F(\lambda,1/\gamma)$ where $F$ is a polynomial depending only on the running time of \adv.
 \end{thm}
 
  \begin{proof}
@@ -542,32 +542,30 @@ Furthermore, \ext's running time will be $P(\lambda,1/\gamma)$ where $P$ is a po
   and such two signatures enable computing \sk.
   
  Define the two functions
-   \[ P = 4Q/\gamma, T=\lceil \ln 3 P /2\rceil.\]
+   \[ P = 4Q/\gamma, T=\lceil \ln 3\cdot 2 P \rceil.\]
   Given \rand and \adv, \ext does the following.
   \begin{enumerate}
   \item If \rand is not good, abort.
-  \item If $\lambda$ is such that $r(\lambda)< P(\lambda)$ conduct a brute for search for \sk such that $\sk\cdot \g = \pk$.
+  \item If $\lambda$ is such that $r(\lambda)< 2P(\lambda)$, conduct a brute for search for \sk such that $\sk\cdot \g = \pk$.
    \item Otherwise, set $i=i(\rand)$. Sample $T$ elements $\rand\in \bigset{\rand}{i}$.
-   \item If one of the sampled elements is good and different from \rand, use it to compute and output \sk
+   \item Run \adv using each of the samples as \RO's reply vector. If one of the sampled elements is good and different from \rand, use it to compute and output \sk.
     \end{enumerate}
   We claim \ext retrieves \sk with probability at least $\gamma/2$. This claim will follow from two subclaims described below.
   Fix good \rand and let $i=i(\rand)$.
-   Suppose that 
-  \[|\goodset{\rand}{i}|\geq |\bigset{\rand}{i}|/P\]
-  We first show that given \rand, \ext succeeds w.p. at least $2/3$ over its inner randomness.
-  The event that \ext fails implies in $T$ samples of \bigset{\rand}{i} it didn't find a distinct $\rand'\in \goodset{\rand}{i}$. This probability is bounded by
-  \[(1-(1/P+1/r))^T \leq (1-1/2P)^T \leq e^{-T/2P}\leq 1/3.\]
+  Call \rand \emph{dense} if (it is good and) 
+  \[|\goodset{\rand}{i}|\geq |\bigset{\rand}{i}|/P.\]
+  We first show that given dense \rand, \ext succeeds w.p. at least $2/3$ over its inner randomness:
+  The event that \ext fails implies that in $T$ samples of \bigset{\rand}{i}, it didn't find a distinct $\rand'\in \goodset{\rand}{i}$. This probability is bounded by
+  \[(1-(1/P-1/r))^T \leq (1-1/2P)^T \leq e^{-T/2P}\leq 1/3.\]
   
   
-  Next, we bound the probability of $\rand\in \F^Q$ belonging to a set \goodset{\rand}{i}
-  of density smaller than $1/P$ in \bigset{\rand}{i}.
+  Next, we bound the probability of $\rand\in \F^Q$ not being dense:
   The number of such \rand is at most
   \[ r^{Q-1}Q \cdot \frac{r}{P}\leq \frac{r^Q\cdot Q}{P}.\]
   Thus the density of such elements is at most
   \[Q/P\leq \gamma/4.\]
   
-  Now using these two subclaims, the probability of \ext succeeding to output \sk is at least the probability of \rand being good and in
-  a set \goodset{\rand}{i} of density at least $1/P$ in \bigset{\rand}{i}; multiplied by the probability of success conditioned on that. This gives success probability at least
+  Now using these two subclaims, the probability of \ext succeeding to output \sk is at least the probability of \rand being dense, multiplied by the probability of \ext succeeding conditioned on \rand being dense. This gives success probability at least
   \[(3\gamma/4)\cdot (2/3) = \gamma/2.\]  
   
   

@@ -1,9 +1,0 @@
-\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
-\BOOKMARK [1][-]{section.2}{Signature schemes}{}% 2
-\BOOKMARK [1][-]{section.3}{Description of Sapling}{}% 3
-\BOOKMARK [2][-]{subsection.3.1}{Basic components}{section.3}% 4
-\BOOKMARK [2][-]{subsection.3.2}{Methods}{section.3}% 5
-\BOOKMARK [1][-]{section.4}{Non-Malleability of Sapling w.r.t. delegated spenders}{}% 6
-\BOOKMARK [1][-]{section.5}{Indistinguishability w.r.t outside adversaries}{}% 7
-\BOOKMARK [2][-]{subsection.5.1}{Balance}{section.5}% 8
-\BOOKMARK [2][-]{subsection.5.2}{Spendability}{section.5}% 9

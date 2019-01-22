@@ -1407,7 +1407,7 @@ thus over-extracting from the pool corresponds to a constructing a ledger where 
 For $i\in [n]$ let us denote respectively by $\inpnotes_i,\outnotes_i$ the positioned input and output notes in $\tx_i$ \emph{with non-zero value}\footnote{Sapling enables the creation of dummy notes with zero value, for which the spend statement doesn't check Merkle path validity, cf. Section 4.7.2 in the spec).}.
 
 
-We also use the extractor from theorem \ref{thm:extractSchnorr} to find $s$ such that $S=s\cdot \gr$
+We also use the extractor from Theorem \ref{thm:extractSchnorr} to find $s$ such that $S=s\cdot \gr$
 where
 \[S\defeq\sum_{i=1}^\ell \cv_i - \sum_{i=\ell+1}^{\ell+s}\cv_i-\vbal\cdot \gv\]
 is the public key in the value binding signature \sigval.
@@ -1470,7 +1470,7 @@ For each $i\in [n], \inpnotes_i \subset \outnotes_1\cup\ldots\cup\outnotes_{i-1}
 
 This implies 
 \[\sum_{\tx\in\ledger} \bal(\tx) \leq 0.\]
-
+ 
 We claim that we must have for some $\tx\in\ledger$, $\bal(\tx)\neq \vbal(\tx)$:
 Otherwise, we would have
 \[\sum_{\tx\in \ledger} \vbal(\tx) = \sum_{\tx\in\ledger} \bal(\tx) \leq 0,\]
@@ -1482,17 +1482,18 @@ Thus, let $\tx=\tx_i$ be such that $\bal(\tx)\neq\vbal(\tx)$. We show in the nex
 \item At this point, we know that $\bal(\tx) \neq \vbal(\tx)$. As both these values are in the open interval \footnote{See 
 the spec for details: \vbal and \val in each transaction input/output are at most $2^{64}$ in absolute value, so assuming 
 less than, e.g., $2^{r-66}$ transaction inputs and outputs in any transaction, this is true.} $(-r/2,r/2)$, we have also $\bal(\tx)\neq \vbal(\tx)$ $(\mathrm{mod}\;  r)$.
-Suppose we are in this case with probability $\gamma$. We show how to find a collision of \valcom with probability
+We show how to find a collision of \valcom with probability
 $\gamma/\poly$. Since \tx verifies, we know that
 $\versig^{\RO}_{\gr}(S,\sighash(\rawtx),\sigval)$ for 
 \[S=\sum_{i=1}^\ell \cv_i - \sum_{i=\ell+1}^{\ell+s}\cv_i-\vbal\cdot \gv= \left(\sum_{i=1}^{\ell} \val_i-\sum_{i=\ell+1}^{s} \val_i\right)\cdot \gv + \left(\sum_{i=1}^{\ell} \rcv_i-\sum_{i=\ell+1}^{s} \rcv_i\right)\cdot \gr  - \vbal\cdot \gv.\]
-Using Theorem \ref{thm:extractSchnorr}, we can
-with probability $\gamma/2$ we can use the forking lemma to rewind \adv while altering the response of \RO on the signature challenge in \sigval, and find $s$ such that $s\cdot \gr = S$.
-Thus, we have $\valcom(0,s) = S$.
+% Using Theorem \ref{thm:extractSchnorr}, \adv' can 
+% with probability $\gamma/2$ find $s$ such that $s\cdot \gr = S$.
+Let $R\defeq \sum_{i=1}^{\ell} \rcv_i-\sum_{i=\ell+1}^{s} \rcv_i$  and $v\defeq \bal(\tx)-\vbal(\tx) (\mathrm{mod}\;  r)$.
+We have $\valcom(v,R) = S$.
 
-Let $R\defeq \sum_{i=1}^{\ell} \rcv_i-\sum_{i=\ell+1}^{s} \rcv_i$  and $v\defeq \bal(\tx)-\vbal(\tx)$.
-We also have $\valcom(v,R) = S$.
-Hence $\adv'$ can output $(0,s), (v,R)$ as a collision of \valcom.
+Recall that if \adv' has reached this stage without aborting, it has obtained $s$ such that $s\cdot\gr =S$.
+Thus, we also have $\valcom(0,s) = S$.
+Hence, noticing that $v\neq0$, $\adv'$ can output $(0,s), (v,R)$ as a collision of \valcom.
 
 \end{enumerate}
 

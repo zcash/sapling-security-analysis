@@ -180,7 +180,7 @@ A security analysis of the Zcash Sapling Protocol}
 \newcommand{\B}{\ensuremath{\vec{B}}\xspace}
 \newcommand{\C}{\ensuremath{\vec{C}}\xspace}
 \newcommand{\Btwo}{\ensuremath{\vec{B_2}}\xspace}
-\newcommand{\treevecsimp}{\ensuremath{(\tau,\rho_A,\rho_A \rho_B,\rho_A\alpha_A,\rho_A\rho_B\alpha_B, \rho_A\rho_B\alpha_C,\beta,\beta\gamma)}\xspace}% The sets of elements used in simplifed relation tree in main text body
+\newcommand{\treevecsimp}{\ensuremath{(\tau,\rho_A,\rho_A \rho_B,\rho_A\alpha_A,\rho_A\rho_B\alpha_B, \rho_A\rho_B\alpha_C,\beta,\beta\gamma)}\xspace}% The sets of elements used in simplified relation tree in main text body
 \newcommand{\rcptc}{random-coefficient subprotocol\xspace}
 \newcommand{\rcptcparams}[2]{\ensuremath{\mathrm{RCPC}(#1,#2)}\xspace}
 \newcommand{\verifyrcptcparams}[2]{\ensuremath{\mathrm{\mathsf{verify}RCPC}(#1,#2)}\xspace}
@@ -884,7 +884,7 @@ Given $(\rt,\vbal)$ we say $(\inputs,\outputs)$ is \emph{consistent} with $\rt,\
 
 if
 \begin{itemize}
- \item for each $j\in [\ell]$ $\input_j$ is consistient with \rt, i.e. \jof{\pak} is from $\notecom(\note_j)$ to \rt,
+ \item for each $j\in [\ell]$ $\input_j$ is consistent with \rt, i.e. \jof{\pak} is from $\notecom(\note_j)$ to \rt,
  \item $\sum_{j=1}^{\ell} \val_j-\sum_{j=\ell+1}^{\ell+s} \val_j=\vbal$.
  \item the positions \sett{\pos_j}{j\in [\ell]} are all distinct.
 \end{itemize}
@@ -943,7 +943,7 @@ where $\input_j = (\val_j,\note_j,\pak_j,\path_j,\pos_j), \output_j =(\gd_j,\pk_
 \section{Non-Malleability of Sapling w.r.t. delegated spenders}
 
 
-We make the simplifying assumption when modelling non-malleability in this writeup; that \emph{there is only one spending key $(\ask,\nsk)$ of the honest signer  involved, and all addresses are diversifed addresses derived from this spending key}.
+We make the simplifying assumption when modelling non-malleability in this writeup; that \emph{there is only one spending key $(\ask,\nsk)$ of the honest signer  involved, and all addresses are diversified addresses derived from this spending key}.
 \subsection*{Modelling the adversary:}
 
 We wish to show that the delegated spender cannot create any new transactions of her own.
@@ -965,7 +965,7 @@ We model the honest signer as an oracle \oracle that \adv interacts with as foll
 $\pak=(\ak,\nsk)$ to \adv.  Where $\ak=\ask\cdot \gsig$.
 
 
-Afterwords, 
+Afterwards, 
 \adv can make \signallinputs queries to \oracle,
 which intuitively correspond to asking for signatures on transactions whose inputs have spending key $(\ask,\nsk)$ (though see remark). 
 \paragraph{Sign-all-inputs queries}% - $\signallinputs(\rawtx,\aks,\alphas)$}
@@ -1063,9 +1063,9 @@ Then, from CR of \sighash, \NF,\notecom,\IVK and Theorem \ref{thm:schnorr-nf} th
 \item \advprime checks if  $\sighash(\rawtx)= \sighash(\rawtx'')$ for some $\tx''\in T$ with $\rawtx\neq \rawtx''$. If so it outputs $(\rawtx,\rawtx'')$ as a collision of \sighash.
 \end{enumerate}
 
-\textit{Explanation of where we are so far:} Denote by \rk and \sig the public key and signature in \inp. Let $\msg \defeq \sighash(\rawtx)$. \sig is a valid signature for message \msg and public key \rk, and \msg was never signed in reply to the \signallinputs queries by \oracle. To obtain a forgery w.r.t randomizatoin for the challenge \akstar, what is left is to find the \alphastar such that $\rk=\akstar+\alphastar\cdot \gsig$. The purpose of the next steps is to obtain such \alphastar or a collision of one of our CRH functions.
+\textit{Explanation of where we are so far:} Denote by \rk and \sig the public key and signature in \inp. Let $\msg \defeq \sighash(\rawtx)$. \sig is a valid signature for message \msg and public key \rk, and \msg was never signed in reply to the \signallinputs queries by \oracle. To obtain a forgery w.r.t randomization for the challenge \akstar, what is left is to find the \alphastar such that $\rk=\akstar+\alphastar\cdot \gsig$. The purpose of the next steps is to obtain such \alphastar or a collision of one of our CRH functions.
 %  \item Denote from now by \rk and \sig the public key and signature in \inp. Let $\msg \defeq \sighash(\rawtx)$.
-%  Since \msg is different from all the messages for which \adv received simulated signatured, \sig is a valid signature of \msg with key \rk. Thus, for \advprime to have a successful reply to the forgery challenge \akstar, it suffices 
+%  Since \msg is different from all the messages for which \adv received simulated signatures, \sig is a valid signature of \msg with key \rk. Thus, for \advprime to have a successful reply to the forgery challenge \akstar, it suffices 
 %  
 %  Let $R\defeq\set{\rk_1,\ldots,\rk_\ell}$ be the randomized public keys in the inputs of \tx,
 %  and $R'\defeq \set{\rk'_1,\ldots,\rk'_{\ell}}$ be the randomized public keys in the inputs of $\tx'$.
@@ -1265,7 +1265,7 @@ $\inp_1,\ldots,\inp_\ell,\inp'_1,\ldots,\inp'_\ell$
 are results of invocations of \makeinput with independent randomness
 $\rcv,\alpha$ and independent randomness of the SNARK prover.
 Inspection shows the only opportunity for dependence amongst any two of them, even after conditioning on the value of the others, is having 
-the random oracle  \RO queried at the same point during the invocations.
+the random oracle \RO queried at the same point during the invocations.
 %Denote for convenience $\inp_{\ell+j} = \inp'_j$ for $j\in [\ell]$.
 \RO is queried for the computation of \NF; so this only happens if %for some $i\neq j\in [2\ell]$ 
  \[(\nk_i,\MPH(\note_i,\pos_i)) =(\nk'_i,\MPH(\note'_i,\pos'_i)).\]
@@ -1289,7 +1289,7 @@ Now to show they are identically distributed given a fixing of $\inp_{<i},\inp'_
  \end{itemize}
  
 \end{proof} 
-We proceed with the elements of the the ouputs. It will be convenient now to view each element in $\out_j,\out'_j$ as 
+We proceed with the elements of the outputs. It will be convenient now to view each element in $\out_j,\out'_j$ as 
 separate random variables $X_i,Y_i$, and show that 
 % for any fixing of $X_{<i},X'a_{<i}$
 % they are \negl-close and \negl-independent.
@@ -1434,7 +1434,7 @@ Thus $\note,\note'$ is a collision of \notecom. In this case, \adv' outputs this
 
 
 Now suppose \pos is not a position of a leaf in $T_j$. This means there is only a partial path \path' in $T_j$ from \rt to a filler value with no preimage (see spec for details).
-So, similarly we follow \path and \path' to their first difference - a difference that must exist becaues of the filler value; and this gives us a collision of \treehash that \adv' outputs.
+So, similarly we follow \path and \path' to their first difference - a difference that must exist because of the filler value; and this gives us a collision of \treehash that \adv' outputs.
 
 
 
@@ -1638,7 +1638,7 @@ and \advprime outputs $(\alpha, \rawtx, \sig)$ as a forgery of \schnorr with cha
 % % honest decodes at the end of each transaction, 
 % 
 % output ledger, legal transaction input \txinput where \inputs
-% are coins of honest player  that haven't been used.
+% are coins of honest player that haven't been used.
 % Such that \createtx{\ledger}{\txinput}
 % fails (with some probability? with noticeable prob?)
 % 
@@ -1653,7 +1653,7 @@ and \advprime outputs $(\alpha, \rawtx, \sig)$ as a forgery of \schnorr with cha
 % public key $[\sk]\cdot \g$
 % encryption of $x$: [\sk]
 \section*{Acknowledgements}
-We thank Matthew D. Green for conversations on simulation extractability that in particular 	inspired the definition and use of invertible group samplers.
+We thank Matthew D. Green for conversations on simulation extractability that in particular inspired the definition and use of invertible group samplers.
 \bibliography{refs}
 \bibliographystyle{plain}
 \end{document}

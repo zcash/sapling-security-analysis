@@ -597,7 +597,7 @@ We define some methods to check whether certain ratios between elements hold, us
 
 \Function{Consistent}{$A, B, C$}
     \If{$C \in (\G21)^2$}
-      \State $r\gets \sameratio{(A_1,B_1)}{(C_1,C_2)}$
+      \State $r\gets \sameratio{(A_1,B_1)}{(C_1,C_2)}$ 
     \Else
       \State $r\gets \sameratio{(A_1,B_1)}{(g_2,C)}$
     \EndIf
@@ -612,6 +612,8 @@ We define some methods to check whether certain ratios between elements hold, us
 \end{algorithmic}
 \end{algorithm}
 We later use the suggestive notation \consistent{A}{B}{C} for the above function with inputs $A,B,C$.
+We further overload the notation \consistent{a}{b}{c} in the case $c\in \G0$, to mean \consistent{a}{b}{c_2}.
+
 \subsection{Proofs of Knowledge}
 
 We will use a discrete log proof of knowledge scheme based on the Knowledge of Exponent assumption.
@@ -811,8 +813,6 @@ and $\enc0{\gate}\defeq M_\gate(\inp'^\ell)\cdot \acc{\gate}{\numplayers}$ for e
 \item Finally, the protocol coordinator computes and outputs, in the same time slot, the values \enc0{\gate} for all gates \gate 
 in the linear combination layer $L=L_\ell$.
 \end{enumerate}
-
-
 
 \paragraph{Verification:\\}
 \noindent
@@ -1415,7 +1415,7 @@ These results show that the protocol is  practical. A user need only spend 15 mi
 
 
  \section*{Acknowledgements}
- We thank Paulo Barreto for helpful feedback about the BLS12-381 elliptic curve. We thank Daniel Benarroch and Daira Hopwood for helpful comments. We thank the anonymous reviewers of S\&P 2018 for their comments.
+ We thank Paulo Barreto for helpful feedback about the BLS12-381 elliptic curve. We thank Daniel Benarroch, Daira Hopwood and Antoine Rondelet for helpful comments. We thank the anonymous reviewers of S\&P 2018 for their comments.
 
 
 \bibliographystyle{plain}
